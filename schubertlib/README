@@ -1,0 +1,91 @@
+schubert is a Maple package for Intersection Theory developed by 
+Sheldon Katz (katz@math.uiuc.edu) and Stein Arild Stromme
+(stromme@math.uib.no).  The current version uses the
+package SF developed by John Stembridge.  All files necessary to
+run schubert within maple are contained in this directory.  Please
+note the following notice:
+
+COPYRIGHT NOTICE:
+Copyright (c) 1992 by Sheldon Katz and Stein Arild Stromme
+
+Permission is granted to anyone to use, modify, or redistribute this
+software freely, subject to the following restrictions:
+
+1. The authors accept no responsibility for any consequences of this
+   software and make no guarantee that the software is free of defects.
+2. The origin of this software must not be misrepresented, either by
+   explicit claim or by omission.
+3. This notice and the copyright must be included in all copies or
+   altered versions of this software.
+4. This software may not be included or redistributed as part of any
+   package to be sold for profit unless the authors have given explicit 
+   written permission to do so.
+5. If schubert proves useful in your research, the authors would appreciate
+   an acknowledgement in published work of your use of schubert.
+
+Files (in the directory schubertlib/ extracted from the file schubert.zip):  
+ README		This file
+in schubert/src/
+ examples		schubert-readable file of examples for Maple 9 on
+ schubert		Source code for schubert Version 0.999 for Maple 9 on
+ schubertmanual	The schubert manual
+ schubert.m		
+ schubert/*.m	
+ maple.hdb		The help files for schubert and SF
+ SF.m			
+ SF/*.m		
+
+
+INSTALLATION
+
+The file schubert.zip contains the "schubertlib"
+directory. Entering
+
+ HomeLib := `C:\\Users\\Chasles\\schubertlib`:
+ libname := libname, HomeLib:
+
+makes maple aware of the schubert and SF packages. To save you from
+entering these two lines every time, you can put the two lines in your 
+initialization file, see ?worksheet,reference,initialization for details.
+
+Now schubert should be available through 'with()'.
+
+ with(SF): with(schubert);
+
+c:\program files\Maple 13\bin.win\cmaple.exe
+    |\^/|     Maple 13 (IBM INTEL NT)
+._|\|   |/|_. Copyright (c) Maplesoft, a division of Waterloo Maple Inc. 2009
+ \  MAPLE  /  All rights reserved. Maple is a trademark of
+ <____ ____>  Waterloo Maple Inc.
+      |       Type ? for help.
+> HomeLib := `C:\\Users\\Chasles\\schubertlib`: libname:=libname,HomeLib:
+> with(SF): with(schubert): 
+> ?schubert
+
+
+REBUILDING
+
+If the files created under Windows XP do not work for you, try and
+rebuild. First remove the schubert.m, schubert/*.m, maple.hdb and 
+SF.m files and the SF directory. As above tell maple about the 
+schubertlib directory
+
+ HomeLib := `C:\\Users\\Chasles\\schubertlib`:
+ libname := libname, HomeLib:
+
+then enter 
+
+ read "C:\\Users\\Chasles\\schubertlib\\schubert\\src\\schubert";
+
+which recreates the schubert package. 
+
+Extract John Stembridge's SF2 from http://www.math.lsa.umich.edu/~jrs/software/SF2.4.tar.gz 
+so that SF is in the schubertlib directory. Ignore the COMPILE.SF file and build from inside maple by issuing the commands:
+
+ files := [Par, add_basis, char2sf, conjugate, dominate, dual_basis, evalsf, hooks, itensor, jt_matrix, nextPar, omega, plethysm, scalar, sf2char, skew, stdeg, subPar, theta, toe, toh, top, tos, varset, zee, SF, added, dualize, homog_cmps, jt_det, to_ehp, tools, verify];
+
+ for file in files do parse(cat(`read `, cat("`C:\\\\Users\\\\Chasles\\\\schubertlib\\\\SF\\\\src\\\\", file, "`;")), statement) end do;
+
+At this point schubert and SF will respond to 'with()', but the newly created helpfiles are unavailable. Restarting maple and pointing it to schubertlib again will make them available.
+
+Enjoy!

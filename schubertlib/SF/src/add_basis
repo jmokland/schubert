@@ -1,0 +1,43 @@
+#
+# Define a new basis b that is orthogonal with respect to some inner
+#  product ip and triangular w.r.t conjugate lex-ordered monomials.
+# Supply an optional partition-eating procedure as args[3] to specify the
+#  leading coefficient of each b[mu] (default = 1).
+# If the final argument (args[3] or args[4]) is not a procedure, set a
+#  flag indicating that this basis is triangular w.r.t dominance order.
+#
+# Note: `SF/iprod`, `SF/lcoeff` and `SF/nondom` are subversively global.
+#
+`SF/add_basis`:=proc(b,ip) local a,n,flag,lc;
+  if type(b,'indexed') then a:=op(0,b) else a:=b fi;
+  if member(a[],`SF/Bases`) or member(a,`SF/Bases`) then
+    ERROR(cat(`base `,a,` is already in use`)) fi;
+  n:=nargs; flag:=type(args[n],'procedure');
+  if not flag then n:=n-1 fi;
+  if n>2 then lc:=args[3] else lc:=1 fi;
+  assign([evaln(`SF/Bases`)={op(`SF/Bases`), a[]},
+    `SF/iprod`[a]=ip, `SF/lcoeff`[a]=lc, `SF/nondom`[a]=flag]);
+  assign(cat(`to`,b)=proc() local c,f,d,B,i,v,vars,kill,nr,res,mu,nu;
+    B:=substring(procname,3..length(procname));
+    f:=SF['toe'](args); res:=0;
+    nr:=`SF/getrows`(args);
+    d:=SF['stdeg'](f,'e');
+    if nr=0 then nr:=d else nr:=min(nr,d) fi;
+    kill:=[seq(cat('e',i)=0,i=nr+1..d)];
+    vars:=[seq(cat('e',-i),i=-nr..-1)];
+    while f<>0 do
+      c:=tcoeff(f,vars,'v');
+      nu:=`SF/shape`(v,'e',nr); mu:=SF['conjugate'](nu);
+      c:=normal(c/`SF/lcoeff`[B](mu));
+      res:=c*B[op(mu)]+res;
+      f:=f-c*subs(kill,`SF/added`(B,nu));
+      f:=`SF/normal`(f,vars,v);
+    od; res
+  end);
+  'Okay';
+end:
+#
+save `SF/add_basis`, cat(HomeLib,`/SF/add_basis.m`);
+read cat(HomeLib,`/help/SF/add_basis`);
+quit;
+

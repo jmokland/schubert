@@ -1,0 +1,18 @@
+#
+# char2sf(chi) applies the characteristic map to the class function chi,
+# producing a symmetric function as the output. The class funtion must be
+# expressed as a linear combination of characteristic functions cl[mu]
+# for various partitions mu. By default, the output will be a p-polynomial.
+# Use char2sf(chi,b) to require output in base b.
+#
+`SF/char2sf`:=proc(chi,b) local res,mu;
+  res:=SF['varset'](chi,'cl[]');
+  res:=convert([seq(coeff(chi,cl[op(mu)])*
+    convert(map(x->cat('p',x),mu),`*`)/SF['zee'](mu),mu=res)],`+`);
+  if nargs>1 then `SF/apply`(b,res,'p') else res fi;
+end: 
+#
+save `SF/char2sf`, cat(HomeLib,`/SF/char2sf.m`);
+read cat(HomeLib,`/help/SF/char2sf`);
+quit;
+

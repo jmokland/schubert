@@ -1,0 +1,78 @@
+#
+# Assume 'a' is a basis defined via dual_basis.
+# For each partition mu listed in sp, replace all instances of a[mu]
+# in the symmetric function f with the corresponding p-polynomial.
+#
+# This requires an expensive computation for each a-variable, so we
+# economize by doing this only once for each homogeneous degree that
+# occurs among the a-variables indexed by sp.
+#
+`SF/dualize`:=proc(a,sp) local cmps,v,vars,t,f,g,b,pr;
+  b:=`SF/dual`[a]; f:=args[3];
+  if nops(sp)=0 then RETURN(f) fi;
+  cmps:=convert([seq(a[op(v)]*t^convert(v,`+`),v=sp)],`+`);
+  cmps:=map(indets,[coeffs(cmps,t)]);
+  for vars in cmps do
+    if degree(f,vars)=1 then
+      f:=collect(f,vars);  # required only for Maple V.3
+      pr:=(x,y)->normal(x/y);
+      f:=`SF/dualize/hg`(f,vars,a,b,pr)
+    else
+      g:=convert([seq(v*t[op(v)],v=vars)],`+`);
+      pr:=proc(x,y) if type(x,`+`) then
+        map((X,Y)->normal(X/Y),x,y) else normal(x/y) fi end;
+      g:=`SF/dualize/hg`(g,vars,a,b,pr);
+      g:=collect(g,[seq(t[op(v)],v=vars)]);  # required for Maple V.3
+      f:=subs({seq(v=coeff(g,t[op(v)]),v=vars)},f);
+    fi
+  od; f
+end:
+#
+# Given a non-empty set of homogeneous a-variables, the dual basis b for a,
+# and a symmetric function f that is *linear* in these a-variables,
+# substitute p-polynomials for the occurrences of these a-variables in f.
+# Future: might be worth it to remember-table the bv's.
+#
+`SF/dualize/hg`:=proc(f,vars,a,b,pr) local mu,g,v,sp,i,bv,scp,d;
+  d:=convert(vars[1],`+`);
+  if type(b,'indexed') then
+    sp:=map((x,y)->[x,y[op(x)]],vars,op(0,b));
+    scp:=`SF/dualize/ind`;
+  else
+    sp:=[seq([v,convert(map((x,y)->cat(y,x),[op(v)],b),`*`)],v=vars)];
+    sp:=sp,[seq(cat(b,i),i=1..d)];
+    scp:=`SF/dualize/mult`;
+  fi;
+  mu:=subs(0=NULL,[d]);
+  g:=subs({seq(v=0,v=vars)},f);
+  while mu<>NULL do
+    v:=convert(map(x->cat('p',x),mu),`*`);
+    bv:=`SF/apply`(b,v,'p');
+    g:=g+pr(scp(f,bv,sp),`SF/iprod`[a](mu))*v;
+    mu:=SF['nextPar'](mu)
+  od; g
+end:
+#
+# Compute the scalar product of f with the b-expression bv, given that
+# the a-variables in f and b-variables in bv are listed by pairs in sp.
+#
+# Either b is a basis name of indexed type,...
+#
+`SF/dualize/ind`:=proc(f,bv,sp) local u;
+  convert([seq(coeff(f,u[1])*coeff(bv,u[2]),u=sp)],`+`)
+end:
+#
+# ...or b is a multiplicative basis name.
+#
+`SF/dualize/mult`:=proc(f,bv,sp,bvars) local u,g,tms,res,j;
+  g:=[coeffs(bv,bvars,'tms')];
+  tms:=[tms]; res:=0;
+  for u in sp do
+    if member(u[2],tms,'j') then res:=res+coeff(f,u[1])*g[j] fi;
+  od; res
+end:
+#
+save `SF/dualize`, `SF/dualize/hg`, `SF/dualize/ind`, `SF/dualize/mult`,
+  cat(HomeLib,`/SF/dualize.m`);
+quit;
+

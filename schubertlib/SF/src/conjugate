@@ -1,0 +1,15 @@
+#
+# conjugate(mu) returns the conjugate of partition mu.
+# mu must be a list in decreasing order.
+#
+`SF/conjugate`:=proc(mu) local i,l;
+  l:=nops(mu);
+  if l=0 then [] else
+    [l$mu[l],seq((-i)$(mu[-i]-mu[1-i]),i=1-l..-1)]
+  fi
+end:
+#
+save `SF/conjugate`, cat(HomeLib,`/SF/conjugate.m`);
+read cat(HomeLib,`/help/SF/conjugate`);
+quit;
+

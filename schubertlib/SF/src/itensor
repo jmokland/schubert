@@ -1,0 +1,32 @@
+#
+# itensor(f,g) computes the inner tensor product (a.k.a. the internal
+#  or Kronecker product)of symmetric functions f and g.
+# itensor(f,g,b1,b2) does the same assuming f is in base b1 and g in b2.
+# itensor(f,g,b) does the same, but converts the output to base b.
+#  (The default base is 'p').
+# itensor(f,g,b1,b2,b) combines both options.
+#
+`SF/itensor`:=proc() local b,d,j,f,g,tf,u,c,res,vars;
+  if nargs>3 then b:=[args[3..4]] else b[1]:=NULL; b[2]:=NULL fi;
+  f:=[seq(SF['top'](args[j],b[j]),j=1..2)];
+  d:=SF['varset'](f,'p'); res:=0;
+  vars:=[seq(cat('p',j),j=1..d)];
+  f:=[[coeffs(f[1],vars,'tf')],[tf],[coeffs(f[2],vars,'tf')],[tf]];
+  if nops(f[2])<=nops(f[4]) then
+    g:=zip((x,y)->[x,y],f[1],f[2]); tf:=f[4]; f:=f[3]
+  else
+    g:=zip((x,y)->[x,y],f[3],f[4]); tf:=f[2]; f:=f[1]
+  fi;
+  for u in g do
+    if member(u[2],tf,'j') then
+      c:=SF['zee'](`SF/shape`(u[2],'p',d));
+      res:=res+normal(c*u[1]*f[j])*u[2]
+    fi;
+  od;
+  if modp(nargs,2)=1 then `SF/apply`(args[nargs],res,'p') else res fi;
+end:
+#
+save `SF/itensor`, cat(HomeLib,`/SF/itensor.m`);
+read cat(HomeLib,`/help/SF/itensor`);
+quit;
+

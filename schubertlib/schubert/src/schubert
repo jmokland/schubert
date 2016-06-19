@@ -1,0 +1,4216 @@
+##########################
+#  schubert, version 0.999
+#
+#  A maple package for Intersection Theory.
+#
+#  
+#  COPYRIGHT NOTICE:
+#  Copyright (c) 1992 by Sheldon Katz and Stein Arild Stromme
+#  
+#  Permission is granted to anyone to use, modify, or redistribute this
+#  software freely, subject to the following restrictions:
+#  
+#  1. The authors accept no responsibility for any consequences of this
+#     software and make no guarantee that the software is free of defects.
+#  2. The origin of this software must not be misrepresented, either by
+#     explicit claim or by omission.
+#  3. This notice and the copyright must be included in all copies or
+#     altered versions of this software.
+#  4. This software may not be included or redistributed as part of any
+#     package to be sold for profit unless the authors have given explicit 
+#     written permission to do so.
+#  5. If schubert proves useful in your research, the authors would appreciate
+#     an acknowledgement in published work of your use of schubert.
+#  
+#  Acknowledgements: Parts of the Maple symmetric function package SF by
+#  John Stembridge are called by schubert.  Part of the work on schubert
+#  was done while the first author was a visitor at Duke University and
+#  while the second author was a visitor at the University of Utah.
+#  
+#  The authors will greatly appreciate reports of any bugs and fixes, as well as
+#  additions that are suitable for inclusion in later versions of schubert.
+#  
+#  The current version of schubert will usually be available for
+#  download at the schubert homepage (http://www.math.uib.no/schubert/).
+#
+#  If you want to be notified of upgrades, send email or ordinary mail
+#  to one of us.
+#  
+#  Addresses:  Department of Mathematics, University of Illinois at Urbana-Champaign,
+#              Urbana, IL 61801, USA            katz@math.uiuc.edu
+#  
+#              Mathematical Institute, University of Bergen, Johs. Brunsgt. 12,
+#              N-5008 BERGEN, Norway            stromme@math.uib.no
+#  
+version_:=`0.999`:
+
+# Changes from version 0.992:
+
+# Changed ditto characters " to %
+# Deleted help text
+# version changed
+# schubert defined as a table
+# : changed to :: when used in typing
+# &* is noncommutative multiplication in maple V5.  Change to &@
+# p[1..d] changed to op(p[1..d]) in toricvariety since p[1..d] now
+#   returns a set
+# <katz@math.uiuc.edu>
+
+# Changes from version 0.995:
+
+# For maintainability, loose the tabs: M-x untabify (emacs)
+# installation and help inspired by SF2
+# updates
+# -- contact information
+# -- eliminate use of last (" or %)
+# -- string.expr -> cat(string,expr)
+# -- name.idx -> cat('name',idx) # LHSs of assignments work from maple9 on
+# -- sum('') -> add()
+# -- ()[i] -> [()][i] # make vector of sequence that may be of lenght one.
+# -- dependence on John Stembridge's SF2 (symmetric functions; SF2.4.tar.gz).
+# -- used to depend on the SF (SF1 or the one in the share library).
+# -- -- proc or SF['proc'] -> `SF/proc`
+# -- -- `SF/jacobi`(mu) -> `SF/jt_det`(mu,0,'h')
+# -- -- `SF/jacobi`(mu,nu,'e') -> linalg[det](`SF/jt_matrix`(mu,nu,'h'))
+# -- -- `SF/ibocaj`(mu) -> `SF/jt_det`(mu,0,'e')
+# refactoring
+# -- proj, grass, Proj, Grass: call out to tangentbundle() 
+# -- (specializes on kind_ so put kind_ before this call in Proj)
+# bugfixes
+# -- strip -> `schubert/strip` to make the ?strip example work
+# workarounds
+# -- -- `linalg/inverse/integer` is no more - > linalg[adjoint] and linalg[det]
+# <jmokland@math.uib.no>
+
+#  
+#  ###------------------------------------------------------------- 
+### strip(A) = A simplified as you wish. strip may be redefined 
+### to include simplifications made possible by relations in the 
+### cohomology ring.
+
+`schubert/strip`:=expand:
+
+###------------------------------------------------------------- 
+
+### DIM = dimension of the base variety. Redefine this as wanted.
+### All computations are truncated in degree DIM+1, although some
+### procedures can override this by means of an optional parameter.
+### Initialize the dimension
+
+DIM:=0:
+
+###-------------------------------------------------------------
+## `schubert/expp` and `schubert/logg` serve to convert from Chern character to Chern
+## class (`schubert/expp`) and conversely (`schubert/logg`). The procedures simply
+## solve Newton's relations between Chern classes and power sums.
+##
+## The procedure `schubert/exp2` uses a formula in Serre's book
+
+###------------------------------------------------------------- 
+## `schubert/expp`(A) = Chern polynomial of sheaf with Chern character A.
+## `schubert/expp`(A,dim) = as above, truncated at degree dim+1.
+
+`schubert/expp` :=proc() local p,c,i,k,AA,dim; 
+
+userinfo(10,expp,`enter expp`);
+     if nargs=1 then dim:=DIM 
+     elif nargs=2 then 
+            if type(args[2],integer) then dim:=args[2] 
+            else ERROR(`second argument not integer`) fi
+     else ERROR(`schubert/expp must have 1 or 2 arguments`) fi;
+
+     p:=array(0..dim); c:=array(0..dim);
+     AA:=expand(args[1]);
+     for k from 1 to dim do p[k]:=(-1)^k*k!*coeff(AA,t,k) od; 
+     c[0]:=1; 
+     for k from 1 to dim do 
+            c[k]:=`schubert/strip`(-sum(c[k-i]*p[i],i=1..k)/k);
+            userinfo(10,expp,cat(`done degree `,k)) od;
+     sum(c[i]*t^i,i=0..dim) 
+end:
+ 
+## This a different version, seems slightly faster in generic case,
+## but perhaps more likely to get in trouble for very large arguments.
+## It does not call strip.
+
+## Not an officially supported part of schubert. To use it, you need
+## to put the code in a file and read that file into maple.
+
+# `schubert/exp2` :=proc() local dim,k;
+# userinfo(10,expp,`enter schubert/exp2`);
+
+#      if nargs=1 then dim:=DIM 
+#      elif nargs=2 then 
+#             if type(args[2],integer) then dim:=args[2] 
+#             else ERROR(`second argument not integer`) fi
+#      else ERROR(`schubert/exp2 must have 1 or 2 arguments`) fi;
+
+#    convert(taylor(exp(add(coeff(expand(args[1]),t,k)*(k-1)!*(-1)^(k-1)*t^k,k=1..dim)),t,dim+1),polynom)
+#  end:
+
+###-------------------------------------------------------------      
+## `schubert/logg`(A) = non-constant part of Chern character of sheaf with 
+##      Chern class A. Add the rank to get the full Chern character.
+
+`schubert/logg` :=proc() local AA,dim,p,c,i,k: 
+
+userinfo(10,expp,`enter schubert/logg`);
+     if nargs=1 then dim:=DIM 
+     elif nargs=2 then 
+            if type(args[2],integer) then dim:=args[2] 
+            else ERROR(`second argument not integer`) fi
+     else ERROR(`schubert/logg must have 1 or 2 arguments`) fi;
+
+     AA:=expand(args[1]);
+     p:=array(0..dim); c:=array(0..dim);
+     for k from 1 to dim do c[k]:=coeff(AA,t,k) od; 
+     for k from 1 to dim do
+         p[k]:=`schubert/strip`(-k*c[k]-sum(p[i]*c[k-i],i=1..k-1));
+         userinfo(10,expp,cat(`done degree `,k)) 
+      od;
+     sum(p[i]/i!*(-1)^i*t^i,i=1..dim) 
+end:
+
+###------------------------------------------------------------- 
+### sheaf(n,[a,b,...],X) = rank-n sheaf with c1=a, c2=b,...
+###                        on the variety X
+### Third parameter optional.
+
+`schubert/sheaf`:=proc() local i,dim;
+
+    if nargs=0 then 
+       RETURN(`usage: sheaf(rank,classes) or sheaf(rank,classes,variety)`) fi;
+
+    if nargs=3 then dim:=args[3][dimension_] 
+    else dim:=DIM fi;
+
+    if not(type(args[2],list)) then 
+    ERROR(`second argument must be a list (of Chern classes)`) fi;
+
+    args[1]+`schubert/logg`(1+sum(args[2][i]*t^i,i=1..nops(args[2])),dim) 
+end:
+
+###------------------------------------------------------------- 
+### bundle(n,'x',X) = bundle of rank n with Chern classes x1,...xn
+### May use bundle(n,x) if x has no value or evaluates to a name.
+### Third argument optional.
+
+`schubert/bundle` := proc(n,x,X) local i,dim; 
+
+    if nargs=0 then 
+        RETURN(`usage: bundle(rank,name) or bundle(rank,name,variety)`) fi;
+
+    if nargs=3 then dim:=X[dimension_] 
+    else dim:=DIM fi;
+
+    n+`schubert/logg`(1+add( cat('x',i)*t^i ,i = 1 .. n),dim) 
+end:
+
+###------------------------------------------------------------- 
+## o(d,X) = Line bundle with first Chern class = d on variety X
+##          Second argument optional.
+
+`schubert/o`:=proc(d,X) 
+
+    if nargs=0 then RETURN(`usage: o(d) or o(d,X)`) fi;
+
+    if nargs=2 then sheaf(1,[d],X) 
+    elif nargs=1 then sheaf(1,[d]) 
+    else ERROR(`usage: o(d) or o(d,X), d=class, X=variety`) fi
+end:
+
+### chern(A)  = total Chern class of A
+### chern(p,A)= p-th Chern class of A
+### chern(p,q,A)= [c_p(A),...,c_q(A)]
+
+`schubert/chern`:=proc() 
+   local c,k;
+   if nargs=0 then RETURN(`usage: chern(A) or chern(p,A) or chern(p,q,A)`) fi;
+   if nargs=1 then `schubert/expp`(args) 
+   elif nargs=2 then 
+                if args[1]<0 then 0
+                elif args[1]=0 then 1
+                else coeff(`schubert/expp`(args[2],args[1]),t,args[1]) fi
+   elif nargs=3 then
+      if args[1]>args[2] then []
+      else 
+         c:=`schubert/expp`(args[3],args[2]);
+         [seq(coeff(c,t,k),k=args[1]..args[2])]
+      fi
+   else ERROR(`wrong number or type of arguments`) fi
+end: 
+
+###-------------------------------------------------------------   
+### segre(A)  = 1/chern(dual(A))
+### segre(p,A)= p-th Segre class of A
+### segre(p,q,A) = [s_p(A),...,s_q(A)]
+
+`schubert/segre`:=proc()
+   local c,k;
+   if nargs=0 then RETURN(`usage: segre(A) or segre(p,A) or segre(p,q,A)`) fi;   
+   if nargs=1 then `schubert/expp`(-dual(args))
+   elif nargs=2 then 
+                if args[1]<0 then 0
+                elif args[1]=0 then 1
+                else coeff(`schubert/expp`(-dual(args[2]),args[1]),t,args[1]) fi;
+   elif nargs=3 then
+      if args[1]>args[2] then []
+      else 
+         c:=`schubert/expp`(-dual(args[3]),args[2]);
+         [seq(coeff(c,t,k),k=args[1]..args[2])]
+      fi
+   else ERROR(`wrong number or type of arguments`) fi
+end: 
+
+
+###-------------------------------------------------------------   
+## todd(A)=Todd class of A
+
+`schubert/todd`  :=proc(A) local d,i,tmp;
+       if nargs=0 then RETURN(`usage: todd(A)`) fi;
+       tmp:=`schubert/logg`(`schubert/strip`(convert(
+              taylor(t*d/(1-exp(-t*d)),t,DIM+2),polynom)),DIM);
+       `schubert/expp`(sum(coeff(tmp,d,i)*i!*coeff(A,t,i),i=0..DIM),DIM)
+end:
+
+
+###------------------------------------------------------------- 
+## A &@ B = the (tensor) product of A and B. Note infix notation.
+## tensor(A,B) gives same result.
+
+`schubert/tensor` :=proc(A,B) local a,b,c,i,k: 
+     if nargs=0 then RETURN(`usage: tensor(A,B) or A &@ B`) fi;
+     a:=array(0..DIM); b:=array(0..DIM); c:=0;
+     for k from 0 to DIM do 
+         a[k]:=coeff(A,t,k); b[k]:=coeff(B,t,k);
+         c:=c+`schubert/strip`(sum(a[i]*b[k-i],i=0..k))*t^k 
+     od;
+     `schubert/strip`(c)
+end:
+
+###------------------------------------------------------------- 
+## dual(A) = The dual of a bundle A, or virtual dual of a sheaf.
+
+`schubert/dual` :=proc(A) 
+    if nargs=0 then RETURN(`usage: dual(A)`) fi;
+    subs(t=-t,eval(A)) 
+end:
+
+###------------------------------------------------------------- 
+## adams(k,A) = the Adams operator of K-theory
+
+`schubert/adams`:=proc(k,A) 
+    if nargs=0 then RETURN(`usage: adams(k,A)`) fi;
+    subs(t=k*t,A) 
+end:
+
+###------------------------------------------------------------- 
+## Hom(A,B)
+
+`schubert/Hom`:=proc(A,B) 
+    if nargs=0 then RETURN(`usage: Hom(A,B)`) fi;
+    dual(eval(A))&@B 
+end:
+
+###------------------------------------------------------------- 
+## End(A)
+
+`schubert/End`:=proc(A) 
+    if nargs=0 then RETURN(`usage: End(A)`) fi;
+    Hom(A,A) 
+end:
+
+###------------------------------------------------------------- 
+## rank(A) = rank of the sheaf A.
+
+`schubert/rank` :=proc(A) 
+    if nargs=0 then RETURN(`usage: rank(A)`) fi;
+    expand(subs(t=0,A)) 
+end:
+ 
+###-------------------------------------------------------------  
+### determinant(A) = determinant line bundle of A
+
+`schubert/determinant`:=proc (A) 
+    if nargs=0 then RETURN(`usage: determinant(A)`) fi;
+    o(coeff(A,t,1)) end:
+
+###------------------------------------------------------------- 
+### wedge(p,A) = Chern character of p-th exterior power of 
+### a locally free sheaf with Chern character A.
+### Recursive. Duality is taken into account.
+
+`schubert/wedge`:=proc (p,A) local r,m; options remember;
+    if nargs=0 then RETURN(`usage: wedge(p,A)`) fi;
+    r:=rank(A);
+    if p<0 or p>r then 0
+      elif p=0 then 1
+      elif p=1 then A
+      elif 2*p>r then determinant(A)&@dual(wedge(r-p,A))
+    else
+          `schubert/strip`(add( wedge(m,A)*(-1)^(p-m+1)&@subs(t=t*(p-m),A) ,m=0..(p-1))/p);
+    fi;
+end:
+
+###------------------------------------------------------------- 
+### symm(p,A) = p-th symmetric power of A. Computed using the 
+### Eagon-Northcott complex
+
+`schubert/symm`:=proc (p,A) local r,k; options remember;
+    if nargs=0 then RETURN(`usage: symm(p,A)`) fi;
+    if p<0 then 0
+       elif p=0 then 1
+    else
+       r:=min(p,rank(A));
+       `schubert/strip`(add( wedge(k,A)&@symm(p-k,A)*(-1)^(1+k) ,k=1..r));
+    fi;     
+end:
+
+###------------------------------------------------------------- 
+### Symm(p,A) = p-th symmetric power of A. Faster than symm
+###             for large p, and also works for symbolic p
+
+
+`schubert/Symm`:=proc(m,A) 
+global  DIM, SYMM_;
+local todch,tod,r,sA,i,a;
+   if nargs=0 then RETURN(`usage: Symm(p,A)`) fi;
+   if not(assigned(SYMM_[A])) then
+        r:=rank(A):
+        sA:=segre(0,DIM,A):
+        DIM:=DIM+r-1;
+        tod:=todd(dual(A)&@o(a)-1);
+        todch:=tod&@o('n'*a);
+        DIM:=DIM-r+1:
+        SYMM_[A]:=expand(sum(sA[i+1]*coeff(todch,a,r-1+i),i=0..DIM)/t^(r-1))
+   fi;
+   subs('n'=m,SYMM_[A])
+end:
+
+
+###-------------------------------------------------------------       
+###-------------------------------------------------------------       
+## A &/ B = A/B where B is a class with constant term =/= 0.
+      
+`schubert/division` :=proc(A,B) local a,b,c,i,k: 
+     if nargs=0 then RETURN(`usage: division(A,B) or A &/ B`) fi;
+     a:=array(0..DIM); b:=array(0..DIM); c:=array(0..DIM);
+     for k from 0 to DIM do a[k]:=coeff(A,t,k); b[k]:=coeff(B,t,k) od; 
+     if b[0]=0 then ERROR(`no constant term in denominator`) fi;
+     c[0]:=a[0]/b[0];
+     for k from 1 to DIM do
+     c[k]:=`schubert/strip`((a[k]-sum(c[i]*b[k-i],i=0..k-1))/b[0]) od;
+     sum(c[i]*t^i,i=0..DIM) 
+end:
+
+
+###-------------------------------------------------------------   
+## twist(r,f,y) = Chern class of vector bundle A(y) where 
+##                rank(A)=r and c(A)=f.
+
+`schubert/twist`:=proc(r,f,y) local ff,i,p;
+     if nargs=0 then RETURN(`usage: twist(r,A,y)`) fi;
+     ff:=expand(f); 
+     collect(expand(1+sum(t^p*sum(binomial(r-i,p-i)*coeff(ff,t,i)*y^(p-i),i=0..p),p=1..r)),t)
+     end:
+
+###-------------------------------------------------------------   
+## schur(partition,A)=schur function in chern classes of A
+## schur(partition,partition,A)= skew schur function
+
+`schubert/schur`:=proc() local i,j;
+    if nargs=0 then 
+        RETURN(`usage: schur(partition,A) or schur(partition,partition2,A)`) fi;
+        expand(subs(seq(cat('h',i)=segre(i,args[nargs]),i=1..convert(args[1],`+`)),
+                `SF/jt_det`(seq(args[j],j=1..(nargs-1)),0,'h')))
+end:
+
+##-----------------------------------------------------------------------
+`schubert/porteous`:=proc(A,B,k) 
+   local n,m,cc,i,j;
+   if nargs=0 then RETURN(`usage: porteous(A,B,k)`) fi;
+   n:=rank(A); m:=rank(B);
+   if m<n then RETURN(porteous(dual(B),dual(A),k)) fi;
+   if k>=n then 1 
+   elif k<0 then 0
+   else
+      cc:=chern(0,m+n-2*k-1,B-A);
+      expand(linalg[det](array([seq([seq(cc[m-k+j-i+1],j=1..n-k)],i=1..n-k)])))
+   fi
+end:
+
+`schubert/porteous2`:=proc(A,B,k)
+   if nargs=0 then RETURN(`usage: porteous2(A,B,k)`) fi;
+   schur([(rank(A)-k)$(rank(B)-k)],B-A)
+end:
+
+`schubert/koszul`:=proc(A) local i;
+        if nargs=0 then RETURN(`usage: koszul(A)`) fi;
+        add( (-1)^i*wedge(i,A) ,i=0..rank(A)) 
+end:
+
+###-------------------------------------------------------------   
+## schurfunctor(partition,A)=schur functor applied to bundle A
+## schurfunctor(partition,partition,A)= skew schur functor
+
+`schubert/schurfunctor`:=proc() local A,j,r,s,k,temp;
+     if nargs=0 then RETURN(
+     `usage: schurfunctor(partition,A) or schurfunctor(partition,partition2,A)`) fi;
+     A:=args[nargs]:
+     r:=rank(A):
+     s:=`SF/jt_det`(seq(args[j],j=1..(nargs-1)),0,'h'):
+     temp:=expand(subs(seq(cat('h',k)=Symm(k,A),k=1..r),s)):
+     expand(add(coeff(temp,t,k)*t^k,k=0..DIM))
+end:
+
+###-------------------------------------------------------------   
+
+`schubert/schurfunctor2`:=proc(mu,A) local j,k;
+   option remember;
+   if nargs=0 then RETURN(`usage: schurfunctor2(partition,A)`) fi;
+   if nops(mu)=0 then 1
+   elif nops(mu)=1 then symm(op(mu),A)
+   else
+      expand(add( (-1)^(k-1)*symm(mu[k]-k+1,A)&@
+         schurfunctor2([seq(mu[j]+1,j=1..k-1),seq(mu[j],j=k+1..nops(mu))],A) ,
+         k=1..nops(mu)))
+   fi
+end:
+
+##-----------------------------------------------------------------------
+# FUNCTION: variety - construct table with variety data
+#    
+# CALLING SEQUENCE:
+#    variety(X,<options>)
+
+
+`schubert/variety`:=proc(X,a,b,c,d,e,f,g) local opt,str;        
+        if nargs=0 then RETURN(`usage: variety(name,<options>)`) fi;
+        if not(type(X,name)) then ERROR(`first arg must be name`) fi;   
+        X:=table();     
+        for opt in [args[2..nargs]] do
+                if type(opt,`=`) then 
+                   str:=substring(op(1,opt),1..3);
+                   if str='dim' and type(op(2,opt),integer) then
+                           X[dimension_]:=op(2,opt)
+                   elif str='var' and type(op(2,opt),list) then 
+                           X[variables_]:=op(2,opt)
+                   elif str='deg' and type(op(2,opt),list) then 
+                           X[degrees_]:=op(2,opt)
+                   elif str='rel' and type(op(2,opt),list) then 
+                           X[relations_]:=op(2,opt);
+                   elif str='poi' then
+                           X[point_]:=op(2,opt)
+                   elif str='tan' then
+                           X[tangentbundle_]:=op(2,opt) fi;
+                   fi;
+        od;     
+        if not(assigned(X[dimension_])) then X[dimension_]:=DIM fi;
+        if assigned(X[relations_]) then monomialvalues(X) fi;
+        if not(type(args[nargs],`=`)) then
+           str:=substring(args[nargs],1..3);
+           if str='bas' or str='all' then additivebasis(X) fi;
+           fi;
+        setvariety(X);
+        where();
+end:
+
+##-----------------------------------------------------------------------
+# FUNCTION: setvariety - make a given variety currentvariety
+#    
+# CALLING SEQUENCE:
+#    setvariety(X)
+
+`schubert/setvariety`:=proc(X) 
+    global  DIM, currentvariety_;
+    if nargs=0 then RETURN(`usage: setvariety(X)`) fi;
+    DIM:=X[dimension_]; currentvariety_:=X;
+    userinfo(10,where,cat(`currentvariety_ is `,currentvariety_,`, DIM is `,DIM));
+    where()
+end:
+
+`schubert/where`:=proc() 
+cat(`currentvariety_ is `,currentvariety_,`, DIM is `,DIM)
+end:
+
+##-----------------------------------------------------------------------
+
+##-----------------------------------------------------------------------
+# FUNCTION: toddclass - Compute the Todd class of a variety or bundle
+#    
+`schubert/toddclass`:=proc(X) 
+        if nargs=0 then RETURN(` usage: toddclass(X)`) fi;
+        if not(type(X,table)) then ERROR(`usage: toddclass(variety)`) fi;
+        if not(assigned(X[tangentbundle_])) then
+                ERROR(`need tangent bundle to compute Todd class`) 
+        fi;
+        if assigned(X[source_]) then setvariety(X[source_]) else setvariety(X) fi;
+             #(X might be a morphism)
+        X[toddclass_]:=todd(X[tangentbundle_]);
+        cat(`toddclass computed for `,X);
+end:
+
+##-----------------------------------------------------------------------
+
+`schubert/monomials`:=proc(X,a1,a2) local n,g,genf,vars,degs,k,result;
+   if nargs=0 then 
+      RETURN(`usage: monomials(X) or monomials(X,n) or monomials(n,vars,degs)`) fi;
+   if type([args],[integer,list,list]) then 
+                n:=X; vars:=a1; degs:=a2;
+        genf:=product((1-vars[k]*t^(degs[k]))^(-1),k=1..nops(vars));
+        genf:=expand(convert(taylor(genf,t,n+1),polynom));
+        genf:=coeff(genf,t,n);
+        if type(genf,`+`) then result:=[op(genf)] else result:=[genf] fi;
+        RETURN(result) 
+   fi;
+   if type([args],[table,integer]) then n:=max(a1,X[dimension_]) 
+        elif type([args],[table]) then n:=X[dimension_]
+        else ERROR(`usage: monomials(variety) or monomials(variety,integer)`)
+   fi;
+   if not(assigned(X[monomials_][n])) then
+        vars:=X[variables_];
+        degs:=X[degrees_];
+                userinfo(10,debug,`starting to build generating function`);
+        genf:=product((1-vars[k]*t^(degs[k]))^(-1),k=1..nops(vars));
+        genf:=expand(convert(taylor(genf,t,n+1),polynom));
+        for k from 0 to n do
+                g:=coeff(genf,t,k);
+                if type(g,`+`) then X[monomials_][k]:=[op(g)] 
+                else X[monomials_][k]:=[g] fi
+        od;
+   fi;
+if nargs=2 then X[monomials_][a1] else X[monomials_] fi
+end:
+
+##-----------------------------------------------------------------------
+### monomialvalues(X) produces the integrals of the top monomials
+### up to a common scalar. If point_ is given, we normalize so that
+### the integral of point_ is 1.
+
+`schubert/monomialvalues`:=proc(X) local 
+        MONS, N, R, d, rd, relsd, monvars, sol,
+        dim, dsb, m, mls, tt, pt, eqs,
+        vars,rels,v,r,rn,i,j,mon,cof,A;
+        if nargs=0 then RETURN(`usage: monomialvalues(X)`) fi;
+        userinfo(15,debug,`enter monomialvalues`);
+        dim:=X[dimension_];
+        vars:=X[variables_];
+        rels:=X[relations_];
+        v:=nops(vars);
+        r:=nops(rels);
+        dsb:=seq(vars[i]=tt^X[degrees_][i]*vars[i],i=1..v);
+        MONS:=monomials(X,dim);
+        N:=nops(MONS);
+        ## Collect all relations in degree dim(X):
+        userinfo(10,debug,`start collecting all relations`);
+        relsd:=NULL;
+        for rn from 1 to r do
+           R:=expand(rels[rn]);
+           d:=degree(subs(dsb,R),tt);
+           if d<=dim then
+              mls:=X[monomials_][dim-d];
+              for i to nops(mls) do relsd:=relsd,expand(R*mls[i]) od
+           fi;
+           userinfo(15,debug,cat(`relation number `,rn,` done.`))
+        od;
+        relsd:={relsd};
+        rd:=nops(relsd);
+        userinfo(5,debug,cat(`#relations=`,rd,`, #monomials=`,N));
+        if rd=0 then 
+                if N=1 then X[monomialvalues_][MONS[1]]:=1
+                else  ERROR(`no relations in top degree??`) fi
+        else
+                eqs:=NULL;
+                for rn from 1 to rd do
+                        cof:=[coeffs(relsd[rn],vars,'mon')];
+                        mon:=[mon];
+                        eqs:=eqs,sum(cof['i']*A[mon['i']],'i'=1..nops(cof));
+                od;
+                monvars:={seq(A[MONS[i]],i=1..N)};
+                userinfo(10,debug,cat(`start solving linear equations, time=`,time()));
+                sol:=solve({eqs},monvars);
+                userinfo(10,debug,cat(`finished solving linear equations, time=`,time()));
+                for m in MONS do X[monomialvalues_][m]:=subs(sol,A[m]) od
+        fi;
+        if not(assigned(X[point_])) then 
+           print(`integrals only computed up to a common (unknown) scalar`)
+        else
+           userinfo(10,debug,`normalize so that [point]=1`);
+           cof:=[coeffs(X[point_],X[variables_],'mon')];
+           mon:=[mon];
+           pt:=add( cof[j]*X[monomialvalues_][mon[j]] , j =1..nops(cof)); 
+           for m in MONS do X[monomialvalues_][m]:=X[monomialvalues_][m]/pt od;
+        fi;
+        cat(`computed integral of all `,N,` monomials of top degree`);
+end:
+
+##-----------------------------------------------------------------------
+# FUNCTION: integral - compute integral of zero-cycle
+
+`schubert/integral`:=proc() local X,c,cof,mon,j;
+        if nargs=0 then RETURN(`usage: integral(c) or integral(X,c)`) fi;
+        if nargs=2 then X:=args[1]; c:=args[2]
+        elif nargs=1 then X:=currentvariety_; c:=args[1]
+        else ERROR(`wrong number of arguments. Usage:`)
+        fi;
+        if X[kind_] = projectivebundle_ or X[kind_] = grassmannbundle_ then
+        RETURN(integral(X[basevariety_],lowerstar(X[structuremorphism_],c))) 
+        fi;
+        if not(assigned(X[monomialvalues_])) then 
+            RETURN('procname(args)') 
+        fi;
+        cof:=[coeffs(expand(c),X[variables_],'mon')];
+        mon:=[mon];
+    add( cof[j]*`schubert/lookup`(X[monomialvalues_],mon[j]) ,
+                         j=1..nops(cof));
+end: 
+
+##-----------------------------------------------------------------------
+
+`schubert/lookup`:=proc(Y,m) 
+if assigned(Y[m]) then Y[m] else 0 fi end:
+
+##-----------------------------------------------------------------------
+# FUNCTION: chi - compute Euler-Poincare characteristic
+
+`schubert/chi`:=proc() local i,X,F;
+        if nargs=0 then RETURN(`usage: chi(F) or chi(X,F)`) fi;
+        if nargs=2 then X:=args[1]; F:=args[2]
+        elif nargs=1 then X:=currentvariety_; F:=args[1]
+        else ERROR(`wrong number of arguments. Usage:`) fi;
+
+        
+   if X[kind_] = projectivebundle_ or X[kind_] = grassmannbundle_ then
+        chi(X[basevariety_],lowershriek(X[structuremorphism_],F))
+   else
+        if not(assigned(X[toddclass_])) then toddclass(X) fi;
+        integral(X,add( coeff(X['toddclass_'],t,i)*coeff(F,t,X['dimension_']-i) ,i = 0 .. X['dimension_']))
+    fi
+end:
+
+
+##-----------------------------------------------------------------------
+# FUNCTION: additivebasis - compute a pair of dual bases for the
+#                           intersection ring of X
+
+`schubert/additivebasis`:=proc(X) local inv,D,k,Rk,RDk,A,i,j,rows,cols;
+
+if nargs=0 then RETURN(`usage: additivebasis(X)`) fi;
+
+if not(type(X,table)) then ERROR(`Usage: additivebasis(variety)`) fi;
+if not(assigned(X[monomials_])) then monomials(X) fi;
+if not(assigned(X[monomialvalues_])) then monomialvalues(X) fi;
+
+D:=X[dimension_];
+k:=0;
+while k<=D-k do
+   Rk:=X[monomials_][k];
+   RDk:=X[monomials_][D-k];   
+        userinfo(10,debug,cat(`matrix dimensions `,nops(Rk),` x `,nops(RDk)));
+        A:=array([seq([seq(
+            `schubert/lookup`(X[monomialvalues_],Rk[i]*RDk[j]),
+             j=1..nops(RDk))],i=1..nops(Rk))]);
+        inv:=linalg['transpose'](linalg['inverse'](
+                `schubert/rankblock`(A,'rows','cols')));
+        X[basis_][k]:=[seq(X[monomials_][k][rows[i]],i=1..nops(rows))];
+        X[dualbasis_][D-k]:=convert(linalg[multiply](
+         inv,array([seq(X[monomials_][D-k][cols[i]],i=1..nops(cols))])),list);
+   k:=k+1
+od;
+for k from 0 to (D-1)/2 do 
+   X[basis_][D-k]:=X[dualbasis_][D-k]; 
+   X[dualbasis_][k]:=X[basis_][k];
+od;
+cat(`a pair of dual bases computed for `,X)
+end:
+##-----------------------------------------------------------------------
+
+`schubert/betti`:=proc(X,n)
+local j;
+if nargs=0 then RETURN(`usage: betti(X) or betti(X,n)`) fi;
+if not(assigned(X[betti_])) then
+   if not(assigned(X[basis_])) then 
+     RETURN(`need to compute additivebasis first`)
+   fi;
+   X[betti_]:=[seq(nops(X[basis_][j]),j=0..X[dimension_])]
+fi;
+if nargs=2 then X[betti_][n+1] else X[betti_] fi
+end:
+
+##-----------------------------------------------------------------------
+## rankblock(AA,'rows','cols') returns an r x r invertible submatrix of AA,
+##                             where r=rank(AA). The row and column numbers
+##                             used are returned in the 2. and 3. arguments.
+
+## (Basically, this is linalg[gausselim] suitably modified to keep track of
+## the locations of the pivots used in the elimination process. For
+## heuristic reasons, we work from right to left in the matrix, as this seems
+## to produce bases with less fractions. Should be modified so that 
+## the vector p is permuted rather than permuting actual rows during
+## the Gaussian elimination; this will speed it up a little.)
+
+`schubert/rankblock`:=proc(AA,rows,cols)
+local A,B,n,m,i,j,c,r,t,row,col,p;
+    if not type(A,'matrix') then A := evalm(AA) fi;
+    if not type(A,'matrix') then ERROR(`1st argument must be a matrix`) fi;
+    n := linalg['rowdim'](A);
+    m := linalg['coldim'](A);
+    B := array(1 .. n,1 .. m);
+    for i to n do
+        for j to m do
+            if not type(A[i,j],ratpoly(rational)) then
+                ERROR(`matrix entries must be rational polynomials`)
+            fi;
+            B[i,j] := normal(A[i,j])
+        od
+    od;
+    for i to n do row[i]:=i; p[i]:=i od;
+    col:=NULL;
+    r := 1;
+    for c from m  by -1 to 1  while r <= n do    
+     userinfo(11,debug,cat(`elimination at row `,r,` col `,c));
+        for i from r to n while B[p[i],c] = 0 do   od;
+        for j from i+1 to n do
+            if B[p[j],c] = 0 then next fi;
+            if abs(B[p[j],c]) < abs(B[p[i],c]) then i := j fi
+        od;     
+        if i <= n then
+            if i <> r then
+                t:=row[i]; row[i]:=row[r]; row[r]:=t;
+                for j to c do
+                    t := B[i,j]; B[i,j] := B[r,j]; B[r,j] := t
+                od
+            fi;
+            col:=col,c;     
+            for i from r+1 to n do
+                if B[i,c] = 0 then next fi;
+                t := normal(B[i,c]/B[r,c]);
+                for j  to c-1 do
+                    B[i,j] := normal(B[i,j]-t*B[r,j])
+                od;
+                B[i,c] := 0
+            od;
+            r := r+1
+        fi
+    od;    
+    cols:=sort([col]);
+    row:=[seq(row[i],i=1..r-1)];
+    rows:=sort(row);
+    eval(linalg[submatrix](AA,eval(rows),eval(cols)))
+end:
+##-----------------------------------------------------------------------
+
+`schubert/verifyduality`:=proc(X) local i, mat;
+        if nargs=0 then RETURN(`usage: verifyduality(X)`) fi;
+        setvariety(X):
+        for i from 0 to X[dimension_] do
+                mat:=map(integral,linalg['multiply'](X[basis_][i],linalg['transpose'](X[dualbasis_][X[dimension_]-i])));
+                print(cat(`det `,eval(mat)=linalg['det'](mat)));
+        od
+end:
+##-----------------------------------------------------------------------
+
+## codimension(Y,y) gives the codimension of a class y in A(Y).
+
+`schubert/codimension`:=proc(Y,y) local i,tt;
+   if nargs=0 then RETURN(`usage: codimension(Y,y)`) fi;
+        degree(subs(seq(Y[variables_][i]=Y[variables_][i]*tt^(Y[degrees_][i]),i=1..nops(Y[variables_])),y),tt)
+end:
+##-----------------------------------------------------------------------
+
+`schubert/morphism`:= proc(f,X,Y,sb)
+      local i;
+      
+if nargs=0 then RETURN(`usage: morphism(f,X,Y) or morphism(f,X,Y,sb)`) fi;
+      
+f:=table();      
+f[source_]:=X;
+f[target_]:=Y;
+f[dimension_]:=X[dimension_]-Y[dimension_];
+
+if nargs=4 then 
+   if type(sb,list) and type(sb[1],`=`) then 
+      f[upperstardata_]:=op(sb);
+   elif type(sb,list) and nops(sb)=nops(Y[variables_]) then
+      f[upperstardata_]:=seq(Y[variables_][i]=sb[i],i=1..nops(sb))
+   else ERROR(`invalid fourth argument`)
+   fi
+else f[upperstardata_]:=NULL fi;
+f
+end:
+##-----------------------------------------------------------------------
+
+## Composition.  Gives the composition h=gf.
+
+`schubert/compose`:=proc(h,g,f) local tar,vary,numb,sub,subst,i;
+
+if nargs=0 then RETURN(`usage: compose(h,g,f)`) fi;
+
+if not g[source_]=f[target_] then 
+        ERROR(`Composition of these morphisms is not defined`) fi;
+h[source_]:=f[source_];
+tar:=g[target_];
+h[target_]:=tar;
+vary:=tar[variables_];
+numb:=nops(vary);
+for i to numb do sub[i]:=subs(f[upperstardata_],[g[upperstardata_]][i]) od;
+subst:='sub[i]'$'i'=1..numb;
+h[upperstardata_]:=subst;
+h;
+end:
+
+##-----------------------------------------------------------------------
+`schubert/normalbundle`:=proc(f)
+        if nargs=0 then RETURN(`usage: normalbundle(f)`) fi;
+        if not(assigned(f[tangentbundle_])) then
+                f[tangentbundle_]:=f[source_][tangentbundle_]-
+                        upperstar(f,f[target_][tangentbundle_])
+        fi;
+        -f[tangentbundle_]
+end:
+
+###-----------------------------------------------------------------
+### tangentbundle(X) = retrieves or creates tangentbundle.
+### In case create, also todd class is created.
+
+`schubert/tangentbundle`:=proc(X) 
+global  currentvariety_, DIM;
+local cur,c,r,dim,A;
+if nargs=0 then RETURN(`usage: tangentbundle(X)`) fi;
+if not(type(X,'table')) then 
+        ERROR(`argument must be a variety or morphism`) fi;
+if not(assigned(X[tangentbundle_])) then
+   if X[kind_]=projectivespace_ then
+      cur:=currentvariety_;
+      dim:=DIM;
+      setvariety(X);
+      X[tangentbundle_]:=(DIM+1)*o(op(X[variables_]),X)-1;
+   elif X[kind_]=grassmannian_ then
+      cur:=currentvariety_;
+      dim:=DIM;
+      setvariety(X);
+      r:=X[arank_];
+      c:=X[name_];
+      X[tangentbundle_]:=Hom(r-cat('Q',c),cat('Q',c));
+   elif X[kind_]=projectivebundle_ then
+      cur:=currentvariety_;
+      dim:=DIM;
+      up(X);
+      A:=X[vectorbundle_];
+      c:=op(X[variables_]);   
+      X[tangentbundle_]:=dual(A)&@o(c)-1;
+   elif X[kind_]=grassmannbundle_ then
+      cur:=currentvariety_;
+      dim:=DIM;
+      up(X);
+      A:=X[vectorbundle_];
+      c:=X[name_];
+      X[tangentbundle_]:=Hom(A-cat('Q',c),cat('Q',c)) 
+   else 
+      ERROR(`not enough information to compute tangent bundle`)
+   fi;
+   X[toddclass_]:=todd(X[tangentbundle_]);
+   if assigned(cur) then
+      currentvariety_:=cur;
+      DIM:=dim 
+   fi;
+fi;
+X[tangentbundle_];
+end:
+
+###-----------------------------------------------------------------
+### dimension(X) = retrieves dimension.
+
+`schubert/dimension`:=proc(X)
+if nargs=0 then RETURN(`usage: dimension(X)`) fi;
+if not type(X,table) then ERROR(`argument must be a variety`) 
+        else X[dimension_] fi
+end:
+
+##-----------------------------------------------------------------------
+## upperstar(f,y) = f^*(y) where f : X -> Y  and y in A(Y).
+
+`schubert/upperstar`:=proc(f,y) local i,p;
+   if nargs=0 then RETURN(`usage: upperstar(f,y) or f &^* y`) fi;
+   p:=subs(f[upperstardata_],y);
+   if has(p,'t') then 
+                expand(sum(coeff(p,t,i)*t^i,i=0..f[source_][dimension_]))
+   elif codimension(f[source_],p)>f[source_][dimension_] then 0
+   else p fi; 
+end:
+
+##-----------------------------------------------------------------------
+
+`schubert/lowerstar`:=proc(f,x)
+   local  X,Y,m,n,j,k,mon,cof;
+    if nargs=0 then RETURN(`usage: lowerstar(f,y) or f &-* y`) fi;
+   if f[kind_]=grassmannbundle_ or f[kind_]=projectivebundle_ then
+      cof:=[coeffs(expand(x),f[variables_],'mon')];
+      mon:=[mon];
+      RETURN(expand(add( cof[j]*`schubert/lookup`(f[lowerstar_],mon[j]) ,j=1..nops(cof))));
+   fi;
+   X:=f[source_];
+   Y:=f[target_];
+   if not(assigned(Y[basis_])) then additivebasis(Y) fi;
+   m:=Y[dimension_];
+   n:=X[dimension_];
+   k:=codimension(X,x);
+   if n-k>m then RETURN(0) fi; #Then m-n+k<0
+   add( integral(X,upperstar(f,Y[dualbasis_][n-k][j])*x)*
+                Y[basis_][m-n+k][j] ,j=1..nops(Y[basis_][n-k]))
+end:
+##-----------------------------------------------------------------------
+
+### lowershriek(f,A) or f&-!(A) is pushforward using GRR
+
+`schubert/lowershriek`:=proc(f,A) local tmp,i;
+
+if nargs=0 then RETURN(`usage: lowershriek(f,A) or f &-! A`) fi;
+    
+if not(type([args],[table,anything])) then ERROR(`wrong arguments`) fi;
+
+
+if f[kind_]=projectivebundle_ or f[kind_]=grassmannbundle_ then
+   up(f): expand(lowerstar(f,A&@f[toddclass_])/t^f[dimension_])
+else
+   setvariety(f[source_]);
+   if not(assigned(f[tangentbundle_])) then f[tangentbundle_]:=
+        f[source_][tangentbundle_]-upperstar(f,f[target_][tangentbundle_]) fi;
+   if not(assigned(f[toddclass_])) then toddclass(f) fi;
+    tmp:=expand(A&@f[toddclass_]);
+    expand(add(lowerstar(f,coeff(tmp,t,i))*
+    t^(i-f[dimension_]),i=max(0,f[dimension_])..f[source_][dimension_]))
+fi
+end:
+
+##-----------------------------------------------------------------------
+`schubert/curve`:=proc(C,g,p) 
+        if nargs=0 then RETURN(`usage: curve(C,g,p)`) fi;
+        C:=table();
+        C[dimension_]:=1;
+        C[variables_]:=[p];
+        C[degrees_]:=[1];
+        C[point_]:=p;
+        C[relations_]:=[p^2];
+        C[tangentbundle_]:=1+(2-2*g)*p*t;
+        toddclass(C);
+        additivebasis(C);
+        where()
+end:
+
+`schubert/POINT`:=
+table([
+        (monomials_)=table([(0)=[1]]),
+        (monomialvalues_)=table([(1)=1]),
+        (relations_)=[],
+        (dualbasis_)=table([(0)=[1]]),
+        (point_)=1,
+        (toddclass_)=1,
+        (basis_)=table([(0)=[1]]),
+        (dimension_)=0,
+        (variables_)=[],
+        (tangentbundle_)=0,
+        (degrees_)=[]]
+        ):
+
+
+##-----------------------------------------------------------------------
+# FUNCTION: grass - construct a Grassmann varity
+
+`schubert/grass`:=proc(k,r,c,strng)
+        global  DIM;
+        local i,relg,st;
+        if nargs=0 then 
+             RETURN(`usage: grass(k,r,c) or grass(k,r,c,string)`) 
+        fi;
+        cat('G',c):=table();
+        cat('G',c)[dimension_]:=k*(r-k);
+        cat('G',c)[variables_]:=[cat('c',(1..k))];
+        cat('G',c)[degrees_]:=[$1..k];
+                DIM:=r;
+                cat('c',0):=1;
+                relg:=1&/add( cat('c',i)*t^i ,i=0..k);
+        cat('G',c)[relations_]:=[seq(coeff(relg,t,i),i=r-k+1..r)];
+                DIM:=k*(r-k);
+        cat('Q',c):=bundle(k,c);
+        cat('G',c)[point_]:=cat('c',k)^(r-k);
+        cat('G',c)[kind_]:=grassmannian_;
+        cat('G',c)[arank_]:=r;
+        cat('G',c)[qrank_]:=k;
+        cat('G',c)[name_]:=c;   
+        monomialvalues(cat('G',c));
+        if nargs=4 then 
+                st:=substring(strng,1..3); 
+                if st='all' or st='tan' then tangentbundle(cat('G',c)) fi;
+                if st='all' or st='bas' then additivebasis(cat('G',c)) fi;
+        fi;
+        setvariety(cat('G',c));
+        where()
+end:
+##-----------------------------------------------------------------------
+# FUNCTION: proj - construct projective space
+
+`schubert/proj`:=proc(n,h,opt) 
+global  DIM;
+local st;
+        if nargs=0 then RETURN(`usage: proj(n,h) or proj(n,h,option)`) fi;
+        cat('P',h):=table();
+        cat('P',h)[dimension_]:=n;
+        cat('P',h)[variables_]:=[h];
+        cat('P',h)[degrees_]:=[1];
+        cat('P',h)[relations_]:=[h^(n+1)];
+        cat('P',h)[point_]:=h^n;
+        monomialvalues(cat('P',h));
+        DIM:=n;
+        cat('P',h)[kind_]:=projectivespace_;
+        if nargs=3 then 
+           st:=substring(opt,1..3);
+           if st='all' or st='tan' then tangentbundle(cat('P',h)) fi;
+           if st='all' or st='bas' then additivebasis(cat('P',h)) fi;
+        fi;
+        setvariety(cat('P',h));
+        where()
+end:
+
+######################################################################
+## To get extra information from the userinfo statements,
+## do infolevel['toric']:=5 or larger, (or infolevel[all]:=5).
+
+## ----------------------------------------------------------------
+# FUNCTION: toricvariety - construct a toric variety
+
+`schubert/toricvariety`:=proc(X::name,x,edges)
+      local d,cones,rels,n,vv,ed,lr,i,p,dets,j,mc,sp,vars,
+      vx,spec,S,SR,c,cand,cc,dd,inideal,inm,lf,mat,pcone,q,tim,
+      ample,infan,m,r,optio,ops,sol,str,srid;
+
+tim:=time();
+if nargs=0 then RETURN(`usage: toricvariety(X,x,edges,options)`) 
+   fi;
+userinfo(5,'toric',`enter toricvariety at time `=time()-tim);
+## ----------------------------------------------------------------
+## Section 0. Parse arguments
+
+# Third argument. Convert to matrix, assign d and n to the 
+# dimension of matrix (d=number of edges, n=dim of torus).
+
+if type(edges,list(list(integer))) then
+  ed :=linalg[matrix](edges)
+elif type(edges,matrix) then
+  ed :=eval(edges)
+else
+  ERROR(`third argument must be a matrix or a list of lists`)
+fi;
+d  :=linalg[coldim](ed);               # dimension of torus
+n  :=linalg[rowdim](ed);               # number of edges
+
+
+# Second argument. Make list of edge variables.
+
+if   type(x,list) then vx:=x 
+elif type(x,name) then vx:=[cat('x',(1..n))] 
+else ERROR(`second argument must be name or list of names`) fi;
+
+userinfo(10,'toric',`edgevariables are `=vx);
+
+# Arguments 4,5,...
+
+ops:={};
+for optio in [args[4..nargs]] do
+  if type(optio,equation) then
+    str:=substring(lhs(optio),1..3);
+    if str='Pic' or str='pic' then spec:=rhs(optio) 
+    elif str='amp' then ample:=rhs(optio) 
+    elif str='con' then cones:=rhs(optio) 
+    elif str='sri' then srid :=rhs(optio) fi
+  elif type(optio,list(integer)) then ample:=optio
+  elif type(optio,list(list(integer))) then cones:=optio
+  elif type(optio,list(polynom)) then srid:=optio
+  elif type(optio,list(equation)) then spec:=optio
+  elif type(optio,symbol) then ops:=ops union {substring(optio,1..3)}
+  else ERROR(`argument not of correct type: `= optio)
+  fi
+od;
+
+## ----------------------------------------------------------------
+## Section 1. Find all linear relations between the edge variables,
+##            and express edge variables in terms of a basis for
+##            the Picard group.  
+
+
+vv :=linalg[matrix](1,n,vx);     # make a 1 x n matrix of variables
+lr :=linalg[multiply](vv,ed);    # get a vector of linear relations
+
+## To the userdefined variables add more variables if necessary
+## to get a basis of the Picard group. Assign these to a sequence 
+## "sp", and express the edge variables in terms of these.
+
+if not(assigned(spec)) then spec:=[] fi; 
+sol:=solve({seq(lr[1,i],i=1..d),op(spec)},{op(vx)});
+if sol=NULL then 
+  ERROR(`given elements of Pic are dependent!`) 
+fi;
+
+# user defined names and free variables:
+sp:=seq(lhs(spec[i]),i=1..nops(spec)),op(map(lhs,select(eq->lhs(eq)=rhs(eq),sol)));
+vars:=subs(op(sol),vx);                        # edge variables in 
+                                               # terms of given basis
+
+userinfo(10,'toric',`Pic basis `=[sp], `at time `=time()-tim);
+
+## ----------------------------------------------------------------
+## Section 2. Determine all maximal cones in the fan and calculate 
+##            determinants.  
+
+if assigned(cones) then
+  dets:=seq(linalg[det](linalg[submatrix](ed,[op(p[1..d])],1..d)),p=cones); 
+  userinfo(10,'toric','dets'=dets);
+fi;   
+
+## --------------------------------
+
+if assigned(srid) and not(assigned(cones)) then   # sri method
+  cand :=combinat[choose](n,d);       # all d-subsets of {1,...,n}
+  dets :=NULL;                        # intialize volumes
+  cones:=NULL;                        # initialize cones
+  for p in cand do                    # for every possibility
+    m:=product('vx[p[i]]','i'=1..d);  # construct monomial
+    infan:=true;                      # test whether in fan:
+    for r in srid while infan do 
+      if type(m/r,polynom) then infan:=false fi;
+    od; 
+    if infan then
+      cones:=cones,p ;                     # put it in
+                                           # together with its volume
+      dets:=dets,linalg[det](linalg[submatrix](ed,[op(p[1..d])],1..d))
+    fi;    
+  od;
+  cones:=[cones];
+  userinfo(10,'toric',`computed cones ` = cones);
+  userinfo(10,'toric','dets'=dets);
+fi;   # (sri method conditional)
+
+## --------------------------------
+
+if assigned(ample) and not(assigned(cones)) then  # ample method
+  cand :=combinat[choose](n,d);       # all d-subsets of {1,...,n}
+  dets :=NULL;                        # intialize volumes
+  cones:=NULL;                        # initialize cones
+  for p in cand do                    # for each possible cone
+    userinfo(8,'toric',p, `checked at `=time()-tim);
+                                      # put vectors in a matrix:
+    mat:=linalg[submatrix](ed,[op(p[1..d])],1..d); 
+                                   # and try to invert this matrix:
+                                   # inm = dd * mat^(-1), dd = det(mat)
+    inm:=linalg[adjoint](mat);
+    dd:=linalg[det](mat);
+
+    if dd = 0 then next fi;         # We are not worried about linearly
+                                    # dependent sets right now.
+
+    # Now construct the linear functional "lf" which agrees
+    # with the given functions on the edges in the candidate p
+    # (actually, multiplied by the determinant dd):
+
+    lf:=linalg[multiply](inm,[seq(ample[p[i]],i=1..d)]);
+    pcone:=true;
+    for q in {$1..n} minus {op(p)} while pcone do
+      if linalg[innerprod](lf,linalg[row](ed,q))*sign(dd) >= ample[q] then
+         pcone:=false 
+      fi
+    od;
+    if pcone then 
+        cones:=cones,p; dets:=dets,dd 
+    fi;
+  od;
+  cones:=[cones];
+  userinfo(10,'toric',`computed cones ` = cones);
+  userinfo(10,'toric','dets'=dets);
+fi;   # (ample method conditional)
+## --------------------------------
+userinfo(5,'toric',`computed topdimensional cones at time `=time()-tim);
+
+## ----------------------------------------------------------------
+## Section 3. Determine lower-dimensional cones in the fan, 
+##            or equivalently, the Stanley-Reisner ideal. Not needed
+##            if Stanley-Reisner ideal is given.
+
+userinfo(5,'toric',
+      `start computing Stanley-Reisner ideal at `=time()-tim);
+
+if not(assigned(srid)) then      
+  SR:=NULL;                      # supports for SR generators
+  S:=combinat[subsets]({$1..n}); # Look at subsets one at a time
+  c:={};
+  while nops(c)<=d and not(S['finished']) do         
+                              # exit if all <=d-subsets have been done
+    c:=S[nextvalue]();        # choose a subset of {1,...,n}
+    inideal:=true;            # we will try to exclude it from the ideal
+                              # check whether it is a multiple of an 
+                              # earlier found generator:
+    for mc in [SR] while inideal do
+      if mc minus c = {} then inideal:=false fi
+    od;
+                              # check whether is indeed in the ideal:
+    for cc in cones while inideal do
+      if c minus {op(cc)} = {} then inideal:=false fi
+    od;
+                              # if both criteria hold, update the 
+                              # SR list to include c:
+    if inideal then SR:=SR,c fi;
+  od;
+  SR:=[SR];
+                              # convert the supports to monomials:
+  srid:=[seq(
+      product('vx[SR[j][i]]','i'=1..nops(SR[j])),j=1..nops(SR))];
+fi;
+
+rels:=expand(subs(sol,srid));  # pass the ideal over to new variables
+userinfo(10,'toric','rels'=rels);
+
+
+## ----------------------------------------------------------------
+## Section 4. Construct the schubert object of variety type using the
+##            given generators and relations just computed. Compute
+##            the class of a point. Put relevant data into the variety
+##            object, as the maximal cones, and the edge variables and
+##            their relation to the generators for Pic.
+
+X                 :=table();   # Clear eventual old table entries!
+X[cones_]         :=cones;     # list of maximal cones
+X[dets_]          :=[dets];    # multiplicities of the maximal cones
+X[edgevalues_]    :=vars;      # 
+X[edges_]         :=eval(ed);
+X[name_]          :=x;
+X[edgevariables_] :=vx;        # a variable for each edge
+X[StanleyReisner_]:=srid;      # Stanley-Reisner ideal in edgevariables
+X[dimension_]     :=d;
+X[variables_]     :=[sp];      # a basis for Pic
+X[degrees_]       :=[1$(n-d)];
+X[relations_]     :=rels;      # SR ideal in terms of the basis of Pic
+X[smooth_]        :=evalb(abs(convert([dets],`*`))=1); # true or false
+
+if not(X[smooth_]) then print(`Variety is singular`) fi;
+
+
+# For a point, take a cone of minimal multiplicity:
+
+m:=abs(dets[1]); 
+j:=1;
+for i to n do 
+  if abs(dets[i])<m then 
+    m:=abs(dets[i]); j:=i 
+  fi 
+od;
+
+X[point_]:=expand(product('vars[cones[j][i]]','i'=1..d)/abs(dets[j]));
+
+
+## ----------------------------------------------------------------
+## Section 5. Process final options, monomialvalues,
+##            additive basis and/or tangent bundle.
+
+
+if ops intersect {'int','bas','all'} <> {} then
+  userinfo(5,'toric',`start computing monomialvalues at `=time()-tim);  
+  monomialvalues(X);
+  userinfo(10,'toric',`stop computing monomialvalues at `=time()-tim);  
+fi;
+
+if ops intersect {'bas','all'} <> {} then 
+  userinfo(5,'toric',`start computing additive bases at `=time()-tim);  
+  additivebasis(X); 
+  userinfo(10,'toric',`stop computing additive bases at `=time()-tim); 
+  userinfo(5,'toric',`Betti numbers are `=betti(X)); 
+fi;
+
+if ops intersect {'tan','all'} <> {}  then
+  userinfo(5,'toric',`start computing tangentbundle at `=time()-tim);  
+  X[tangentbundle_]:=d+add( add( vars[i]^j* t ^j/j! , j =1..d) , i =1..n);
+  userinfo(10,'toric',`stop computing tangentbundle at `=time()-tim);  
+fi;
+  
+userinfo(5,'toric',`exit toricvariety`=time()-tim);  
+
+setvariety(X)
+end:
+
+##-----------------------------------------------------------------------   
+## needed for wproj
+`schubert/maptounitvector`:=proc(w::list(integer)) local trans,i,d,s,t,L,n;
+  n:=nops(w);
+  d[1]:=w[1];
+  trans:=1;
+  for i to n-1 do
+    d[i+1]:=igcdex(w[i+1],d[i],s[i],t[i]);
+    L[i]:=linalg[diag](1$(i-1),
+     linalg[matrix](2,2,[w[i+1]/d[i+1],-d[i]/d[i+1],t[i],s[i]]));
+    trans:=linalg[multiply](L[i],linalg[diag](eval(trans),1));
+  od;
+  eval(trans)
+end:
+
+##-----------------------------------------------------------------------   
+# FUNCTION: wproj - construct a weighted projective space as a toric
+#                   variety
+
+`schubert/wproj`:=proc(X::name,h::name,w::list(integer),a,b) 
+                     local A,x,n,edges,d,i,j;
+  if nargs=0 then RETURN(`usage: wproj(X,h,w) or wproj(X,h,w,options)`) fi;
+  n:=nops(w);
+  A:=linalg[transpose](linalg[delrows]
+                       (`schubert/maptounitvector`(w),n..n));
+  for j to n do
+    d:=igcd(seq(A[j,i],i=1..n-1)); # make sure generators are primitive
+    A:=linalg[mulrow](A,j,1/d)
+  od;
+  toricvariety(X,h,eval(A),sri=[product('cat('h',i)','i'=1..n)],
+  cones=[seq(subsop(i=NULL,[$1..n]),i=1..n)],args[4..nargs])
+end:
+
+##
+# FUNCTION: whichcone - returns the cone that a given vector is contained in
+
+`schubert/whichcone`:=proc (X,v) local d,n,i,smallcone,cone,coneset,subm,cols,
+                             vv,vars,eq,lhs;
+   if nargs=0 then RETURN(`usage: whichcone(X,v)`) fi;
+   n:=nops(X[edgevariables_]);
+   d:=X[dimension_];
+   cols:=[seq(i,i=1..d)];
+   smallcone:={seq(i,i=1..n)};
+#   conelist:=[];
+   for cone in X[cones_] do
+      coneset:=convert(cone,set);
+      if not(`intersect`(coneset,smallcone) = {}) then
+         subm:=linalg[submatrix](X[edges_],cone,cols);
+         vars:=linalg[matrix](1,d,[seq(cat('vv',i),i=1..d)]);
+         lhs:=evalm(linalg[multiply](vars,subm));
+         if simplex[feasible]({seq(lhs[1,i]=v[i],i=1..d)},NONNEGATIVE) then
+#           conelist:=[op(conelist),cone];
+            smallcone:=`intersect`(smallcone,coneset);
+         fi;
+      fi;
+   od;
+#   print(`The given vector is contained in the maximal cones`);
+#   print(conelist);
+#   print(`The given vector is in the interior of the cone`);
+   convert(smallcone,list)
+end: # whichcone
+
+## Y - name of the new toricvariety
+## X - name of old toricvariety
+## x - name of new edge
+## v - the new edge
+
+## to do - allow more options depending on options present in X
+
+`schubert/insertedge`:=proc (Y,X,x,v,a,b) local n,d,i,j,yc,yed,bigc,scset,cone,
+                                         compset,cc,sc;
+if nargs=0 then 
+     RETURN(`usage: insertedge(Y,X,x,v) or insertedge(Y,X,x,v,options)`) fi;
+   n:=nops(X[edgevariables_]);
+   d:=X[dimension_];
+   yed:=linalg[matrix](n+1,d);
+   for i to n do
+      for j to d do
+          yed[i,j]:=X[edges_][i,j]
+      od;
+   od;
+   for j to d do yed[n+1,j]:=v[j] od;
+   yc:=convert(X[cones_],set);
+## build the set of big cones to be subdivided
+   bigc:={};
+   sc:=whichcone(X,v);
+   scset:=convert(sc,set);
+   for cone in yc do
+       if `intersect`(convert(cone,set),scset) = scset then 
+          bigc:=`union`(bigc,{cone}) 
+       fi;        
+   od;
+   yc:=`minus`(yc,bigc);
+   compset:={};
+## now replace with subdivision first the complementary sets
+   for cc in bigc do
+       compset:=`union`(compset,{`minus`(convert(cc,set),scset)})
+   od;
+## now the subdivision of the small cone
+   for i in sc do 
+      for j in compset do
+         yc:=`union`(yc,{[op(j),op(`minus`(scset,{i})),n+1]})
+      od;
+   od;
+   toricvariety(Y,[op(X[edgevariables_]),x],yed,convert(yc,list),
+                args[5..nargs]) 
+  end: # insertedge
+
+
+### Grass using pushforward formula.  Grass(f,k,A,c) constructs the
+### Grassmann bundle.  Grass(f,k,A,c,tan) computes the relative
+### tangent bundles and todd classes as well.  Note that the 
+### totalspace construction must be done separately.
+##-----------------------------------------------------------------------   
+`schubert/Grass`:=proc(f,k,A,c,str)
+   global  DIM;
+   local low, ltm,ss,tm,sb,r,n,i,j,d,PP,MM,st;
+   if nargs=0 then RETURN(`usage: Grass(f,k,A,c) or Grass(f,k,A,c,option)`) fi;   
+   f:=table();
+   r:=rank(A);
+   if k<0 or k>r then ERROR(`Grassmannian is empty`) fi;    
+   f[arank_]:=r;
+   f[qrank_]:=k;
+   f[vectorbundle_]:=A;
+   f[dimension_]:=k*(r-k);  
+   f[basedimension_]:=DIM;
+   f[name_]:=c;
+   f[variables_]:=[cat('c',(1..k))];
+   f[degrees_]:=[$1..k];
+   f[section_]:=cat('c',k)^(r-k);
+   f[kind_]:=grassmannbundle_;
+   f[upperstardata_]:=NULL;
+   ss:=segre(1,DIM,A):
+   sb:=seq(cat('h',i)=ss[i],i=1..DIM),seq(cat('h',i)=0,i=DIM+1..DIM+k*(r-k));
+   i:='i':
+   monomials(f);
+   for n from 0 to DIM do
+      userinfo(10,debug,cat(`starting codimension `,(DIM-n)));
+      tm:=`schubert/tosmatrix`(n+k*(r-k),k);
+      PP:=`SF/Par`(n+k*(r-k),k);
+      low:=linalg['vector'](nops(PP));
+      for j to nops(PP) do
+         low[j]:=subs(sb,linalg[det](`SF/jt_matrix`(PP[j],[(r-k)$k],'h')))
+      od;
+      ltm:=linalg['multiply'](tm,low);
+      for j to nops(PP) do
+         d:=nops(PP[j]);
+         MM[j]:=product('cat('c',i)^(PP[j][i]-PP[j][i+1])',i=1..(d-1))*cat('c',d)^(PP[j][d]);
+         f[lowerstar_][MM[j]]:=ltm[j]
+      od;
+   od;
+   userinfo(10,debug,`lowerstar computation done`);
+   DIM:=f[dimension_]+f[basedimension_];
+   cat('Q',c):=bundle(k,c);
+   f[quotientbundle_]:=cat('Q',c);
+   if nargs=5 then
+      st:=substring(args[5],1..3);
+      if st='tan' or st='all' then
+         userinfo(10,debug,`start tangent bundle`);
+         tangentbundle(f)
+      fi;
+   fi;
+   userinfo(10,where,cat(`currentvariety_ is `,currentvariety_,`, DIM is `,DIM));
+   f
+end:
+
+##-----------------------------------------------------------------------
+`schubert/tosmatrix`:=proc(n,k) local d,P,aa,A,i,j,cof,mon,num,MM,p;
+        userinfo(10,debug,`enter tosmatrix`);
+        P:=`SF/Par`(n,k);
+        p:=nops(P);
+        userinfo(15,debug,`start generating monomials`);
+        for j to p do 
+            d:=nops(P[j]);
+            MM[j]:=product('cat('e',i)^(P[j][i]-P[j][i+1])',i=1..d-1)*cat('e',d)^(P[j][d]);
+        od;
+        for i to p do num[MM[i]]:=i od; i:='i';
+        userinfo(10,debug,`generate schur polynomials`);
+        A:=linalg[matrix](p,p,0);
+        for i to p do userinfo(15,debug,i);
+                aa:=`SF/jt_det`(P[i],0,'e');
+                userinfo(15,debug,i);
+                aa:=subs(seq(cat('e',j)=0,j=k+1..n),aa);
+                cof:=[coeffs(expand(aa),[cat('e',(1..k))],'mon')];
+                mon:=[mon];
+                for j to nops(mon) do A[i,num[mon[j]]]:=cof[j] od;
+                userinfo(15,debug,i);
+        od;
+        userinfo(10,debug,`Invert the matrix: `);
+        eval(`schubert/unitriangularinverse`(A));
+end:
+##-----------------------------------------------------------------------
+        
+`schubert/unitriangularinverse`:=proc(A) local B,p,d,k,n;
+   n:=linalg[rowdim](A);
+   B:=linalg[diag](1$n);
+   for d from 1 to n-1 do
+      for p from 1 to n-d do
+         B[p,p+d]:=expand(-sum(A[p,p+k]*B[p+k,p+d],k=1..d))
+      od
+   od;
+eval(B)
+end:
+##-----------------------------------------------------------------------
+
+
+##Proj(f,A,c) or Proj(f,A,c,all) = projective bundle associated to vector 
+##bundle A.  The addition of all computes the relative tangent bundle and
+##relative todd class.
+
+`schubert/Proj`:=proc(f,A,c,str) 
+global  currentvariety_, DIM;
+local cur,r,i,seg,st;
+   if nargs=0 then RETURN(`usage: Proj(f,A,c) or Proj(f,A,c,option)`) fi;
+   cur:=currentvariety_;
+   r:=rank(A);
+   f:=table();
+   f[vectorbundle_]:=A;
+   f[dimension_]:=r-1;
+   f[basedimension_]:=DIM;
+   f[variables_]:=[c];
+   f[degrees_]:=[1];
+   seg:=segre(0,DIM,A);
+   for i from r-1 to DIM+r-1 do f[lowerstar_][c^i]:=seg[i-r+2] od;
+                # segre class starts with 0; lists with 1
+                
+   currentvariety_:=cur;
+   DIM:=f[dimension_]+f[basedimension_];
+   f[kind_]:=projectivebundle_;
+   if nargs=4 then
+      st:=substring(args[4],1..3);
+      if st='all' or st='tan' then tangentbundle(f) fi;
+   fi;
+   f[section_]:=c^(r-1);
+   userinfo(10,where,cat(`currentvariety_ is `,currentvariety_,`, DIM is `,DIM));
+   f;
+end:   
+      
+##-----------------------------------------------------------------------
+## up(f) - make totalspace (source of f) current
+## down(f) - make basevariety (target of f) current
+
+`schubert/up`:=proc(f) 
+        global  DIM;
+        if nargs=0 then RETURN(`usage: up(f)`) fi;
+        if assigned(f[source_]) then setvariety(f[source_])
+        elif assigned(f[basedimension_]) then DIM:=f[dimension_]+f[basedimension_]
+        else ERROR(`wrong argument`) fi;
+        where()
+end:
+
+`schubert/down`:=proc(f)
+        global  DIM;
+        if nargs=0 then RETURN(`usage: down(f)`) fi;
+        if assigned(f[target_]) then setvariety(f[target_])
+        elif assigned(f[basedimension_]) then DIM:=f[basedimension_]
+        else ERROR(`wrong argument`) fi;
+        where()
+end:
+##-----------------------------------------------------------------------
+
+
+## totalspace(f,X) constructs the totalspace cat('T',f)
+## totalspace(f,X,tan) constructs the tangentbundle and todd class too
+## totalspace(f,X,bas) constructs the totalspace and additive basis
+## totalspace(f,X,all) constructs all the above
+
+`schubert/totalspace`:=proc(f,X,str) local i,dim,Dim,d,bb,dbb,mat,st,c,r,j,k;
+   if nargs=0 then RETURN(`usage: totalspace(f,X) or totalspace(f,X,option)`) fi;
+   cat('T',f):=table();
+   if f[kind_]=grassmannbundle_ or f[kind_]=projectivebundle_ then
+                dim:=X[dimension_];
+                Dim:=f[dimension_];
+      cat('T',f)[dimension_]:=dim+Dim;
+      cat('T',f)[basevariety_]:=X;
+      cat('T',f)[variables_]:=[op(f[variables_]),op(X[variables_])];
+      cat('T',f)[degrees_]:=[op(f[degrees_]),op(X[degrees_])];
+      cat('T',f)[kind_]:=f[kind_];
+      cat('T',f)[structuremorphism_]:=f;
+      cat('T',f)[point_]:=X[point_]*f[section_];
+      f[source_]:=cat('T',f);
+      f[target_]:=X;
+      setvariety(cat('T',f));
+      if nargs=3 then 
+         st:=substring(str,1..3);
+         if st='all' or st='tan' then
+            cat('T',f)[tangentbundle_]:=f[tangentbundle_]+X[tangentbundle_];
+            cat('T',f)[toddclass_]:=todd(cat('T',f)[tangentbundle_]) fi;
+         if st='all' or st='bas' then
+            userinfo(10,debug,`start generating dual bases`);
+            if f[kind_]=projectivebundle_ then
+               c:=op(f[variables_]);
+               f[fiber_]:=table([
+                             (dimension_)=Dim,
+                             (variables_)=[c],
+                             (degrees_)=[1],
+                             (relations_)=[c^(Dim+1)],
+                             (point_)=c^Dim]);
+            elif f[kind_]=grassmannbundle_ then
+               c:=f[name_];
+               r:=f[arank_];
+               k:=f[qrank_];
+               grass(k,r,c);
+               cat('Q',c,f):=cat('Q',c);
+               f[fiber_]:=cat('G',c) fi;
+            additivebasis(f[fiber_]);
+            setvariety(cat('T',f));
+            if f[kind_]=grassmannbundle_ then cat('Q',c):=bundle(k,c) fi;
+            for d from 0 to dim+Dim do
+                     bb:=NULL: dbb:=NULL:
+               for i from max(0,d-Dim) to min(d,dim) do 
+                  bb:=bb,seq(seq(
+                     expand(X[basis_][i][k]*f[fiber_][basis_][d-i][j]),
+                     j=1..nops(f[fiber_][basis_][d-i])),
+                     k=1..nops(X[basis_][i]));
+                   
+                  dbb:=dbb,seq(seq(
+                     expand(X[dualbasis_][dim-i][k]*
+                         f[fiber_][dualbasis_][Dim-d+i][j]),
+                     j=1..nops(f[fiber_][basis_][d-i])),
+                     k=1..nops(X[basis_][i]));
+               od;
+              cat('T',f)[basis_][d]:=[bb];
+              mat:=map(integral,linalg['multiply'](array([bb]),
+                      linalg['transpose'](array([dbb]))));
+              mat:=linalg['transpose'](linalg['inverse'](mat));
+              cat('T',f)[dualbasis_][dim+Dim-d]:=convert(linalg['multiply'](mat,array([dbb])),list);
+           od   
+        fi;   
+      fi;
+   fi;
+   where()
+end:
+
+`schubert/blowup`:=proc(i) local X, Y, D, d, k,s, N;
+    if nargs=0 then RETURN(`usage: blowup(i)`) fi;
+    cat('B',i) := table();
+        X:=i[target_];
+        Y:=i[source_];
+        D:=X[dimension_];
+        d:=Y[dimension_];
+    cat('B',i)[dimension_] := D;
+    cat('B',i)[variables_] := [cat('E',i),op(X[variables_])];
+    cat('B',i)[degrees_] := [1,op(X[degrees_])];
+    if(assigned(X[point_])) then cat('B',i)[point_]:=X[point_] fi;
+        monomials(cat('B',i));
+        setvariety(Y);
+        N:=normalbundle(i);
+        cat('B',i)[monomialvalues_]:=copy(i[target_][monomialvalues_]);
+        for k from 1 to D do
+                for s from 1 to nops(X[monomials_][D-k]) do
+                        cat('B',i)[monomialvalues_][cat('E',i)^k*X[monomials_][D-k][s]]:=
+                        integral(Y,segre(k-D+d,N)*upperstar(
+                                i,X[monomials_][D-k][s]))*(-1)^(D-d+1)
+                od;
+        od;
+        morphism(cat('p',i),cat('B',i),X);
+        setvariety(cat('B',i));
+        where()
+end:
+        
+`schubert/blowuppoints`:=proc (X,k,e) local i,j,r,v,rels;
+   if nargs=0 then RETURN(`usage: blowuppoints(X,k,e)`) fi;
+   cat('B',e):=table();
+   cat('B',e)[dimension_]:=X[dimension_];
+   cat('B',e)[variables_]:=[op(X[variables_]),cat('e',(1..k))];
+   cat('B',e)[degrees_]:=[op(X[degrees_]),seq(1,i=1..k)];
+   if(assigned(X[point_])) then cat('B',e)[point_]:=X[point_] fi;
+   cat('B',e)[monomialvalues_]:=copy(X[monomialvalues_]);
+   setvariety(cat('B',e));
+   for i from 1 to k do cat('B',e)[monomialvalues_][(cat('e',i))^DIM]:=(-1)^(DIM+1) od;
+   if assigned(X[relations_]) and assigned(X[point_]) then
+      rels:=[op(X[relations_]),seq((cat('e',i))^DIM+(-1)^DIM*cat('B',e)[point_],
+                        i=1..k)];
+      for v in X[variables_] do
+         for j from 1 to k do
+            rels:=[op(rels),v*cat('e',j)]
+            od
+         od;
+      for i from 1 to k-1 do 
+         for j from i+1 to k do 
+            rels:=[op(rels),cat('e',i)*cat('e',j)] od
+#           add in all the zero monomialvalues (or call monomialvalues(cat('B',e));
+#           but this couldn't be very efficient).            
+         od;
+      fi;
+   if assigned(X[tangentbundle_]) then
+cat('B',e)[relations_]:=rels;
+      r:=o(add( cat('e',i) , i =1..k));
+      cat('B',e)[tangentbundle_]:=X[tangentbundle_]-X[dimension_]*(1-dual(r))+r-1
+      fi;
+   morphism(cat('p',e),cat('B',e),X);
+   where()
+end: # `schubert/blowuppoint`
+
+### bundlesection(Z,F) Constructs cat('i',Z) : Z --> X where X=currentvariety,
+###                    F=vector bundle, and Z=zerolocus of general
+###                    section. Only induced classes are considered.
+
+`schubert/bundlesection`:=proc(Z,F) local X,classZ,k,m;
+
+        if nargs=0 then RETURN(`usage: bundlesection(Z,F)`) fi;
+
+        if not(type(Z,name)) then 
+                ERROR(`usage: bundlesection(name,vector bundle)`)
+        fi;
+        
+        X:=currentvariety_;
+        classZ:=chern(rank(F),F);
+        Z:=table([
+                (dimension_)=DIM-rank(F),
+                (variables_)=X[variables_],
+                (degrees_)=X[degrees_]
+                ]);
+        morphism(cat('i',Z),Z,X);
+        cat('i',Z)[kind_]:=bundlesection_;
+        Z[tangentbundle_]:=upperstar(cat('i',Z),X[tangentbundle_]-F);
+        Z[kind_]:=bundlesection_;
+        Z[structuremap_]:=cat('i',Z);
+        Z[class_]:=classZ;
+        monomials(Z);
+        for k from 0 to Z[dimension_] do
+                for m in Z[monomials_][k] do
+                        Z[monomialvalues_][m]:=integral(X,m*classZ)
+                od
+        od;
+        setvariety(Z):
+        where()
+end:
+
+
+
+`schubert/productvariety`:=proc(W,X,Y,pr1,pr2)
+   local dx,dy,m,mm,i,j,k,b,d,db;
+   if nargs=0 then 
+      RETURN(`usage: productvariety(W,X,Y) or productvariety(W,X,Y,pr1,pr2)`) fi;
+   dx:=X[dimension_];
+   dy:=Y[dimension_];
+   W:=table([
+      (dimension_)=dx+dy,
+      (variables_)=[op(X[variables_]),op(Y[variables_])],
+      (degrees_)=[op(X[degrees_]),op(Y[degrees_])]
+      ]);
+   if assigned(X[monomialvalues_]) and assigned(Y[monomialvalues_]) then
+      monomials(W);
+      for m in X[monomials_][dx] do
+         for mm in Y[monomials_][dy] do
+            W[monomialvalues_][m*mm]:=
+               X[monomialvalues_][m]*Y[monomialvalues_][mm]
+         od
+      od
+   fi;
+   if assigned(X[point_]) and assigned(Y[point_]) then
+      W[point_]:=X[point_]*Y[point_]
+   fi;
+   if assigned(X[tangentbundle_]) and assigned(Y[tangentbundle_]) then
+      W[tangentbundle_]:=X[tangentbundle_]+Y[tangentbundle_]
+   fi;
+   if assigned(X[basis_]) and assigned(Y[basis_]) then
+      for d from 0 to dx+dy do
+         b:=NULL; db:=NULL;
+         for i from max(0,d-dx) to min(d,dy) do
+            b:=b,seq(seq(expand(X[basis_][d-i][j]*Y[basis_][i][k]),
+                  j=1..nops(X[basis_][d-i])),k=1..nops(Y[basis_][i]));
+        
+            db:=db,seq(seq(expand(X[dualbasis_][dx-d+i][j]*Y[dualbasis_][dy-i][k]),
+                  j=1..nops(X[basis_][d-i])),k=1..nops(Y[basis_][i]));
+         od;
+         W[basis_][d]:=[b];
+         W[dualbasis_][dx+dy-d]:=[db];
+      od;
+   fi;
+   if nargs=5 then
+      morphism(pr1,W,X);
+      morphism(pr2,W,Y);
+      pr1[kind_]:=product_;
+      pr2[kind_]:=product_;
+   fi;
+   setvariety(W);
+   where()
+end:
+      
+##-----------------------------------------------------------------------
+# FUNCTION: grobnerbasis - compute a grobner basis for the relations
+
+`schubert/grobnerbasis`:=proc(X,order) local ord, grels;
+   if nargs=0 then RETURN(`usage: grobnerbasis(X) or grobnerbasis(X,order)`) fi;
+   if not(assigned(X[relations_])) then ERROR(`need relations`) fi;
+   if nargs=1 then ord:='tdeg' else ord:=order fi;
+   X[order_]:=ord;
+   grels:=grobner['gbasis'](X[relations_],X[variables_],ord);
+   X[grelations_]:=grels;
+   cat(`grobner basis computed with `,nops(grels),` elements`);
+end:
+
+##-----------------------------------------------------------------------
+# FUNCTION: normalform - normal form with respect to a grobner basis
+
+`schubert/normalform`:=proc() local X,x;
+   if nargs=0 then RETURN(`usage: normalform(c) or normalform(X,c)`) fi;
+   if type([args],[table,anything]) then X:=args[1]; x:=args[2] 
+   elif nargs=1 then X:=currentvariety_; x:=args[1] fi;
+   if assigned(X[grelations_]) then
+      grobner['normalf'](x,X[grelations_],X[variables_],X[order_])
+   else x
+   fi
+end:
+##-----------------------------------------------------------------------
+# FUNCTION: integral2 - compute integral (degree of zero-cycle)
+
+`schubert/integral2`:=proc() local X,x;
+   if nargs=0 then RETURN(`usage: integral2(X,c), integral2(c)`) fi;
+   if type([args],[table,anything]) then X:=args[1]; x:=args[2] 
+   elif nargs=1 then X:=currentvariety_; x:=args[1] fi;
+   expand(normalform(X,x)/normalform(X,X[point_]))
+end:  
+##-----------------------------------------------------------------------
+
+`schubert/multiplepoint`:=proc(f,k) local a,c,co,i,j,l,m,n,out,p,push,q,r,sq,ss,u;
+options remember;
+   if nargs=0 then RETURN(`usage: multiplepoint(f,k)`) fi;
+if k=1 then RETURN(1) fi;
+
+#restore local declarations after debugging
+
+c[0]:=1;
+n:=-f[dimension_];
+p[0]:=c[n];
+
+
+
+for i from 1 to n*(k-1) do
+   ss[i]:=0;
+   for j from 0 to i do
+      for l from 0 to i-j do
+         if n>=j then co:=combinat[numbcomb](n-j,l)
+                 else co:=(-1)^l*combinat[numbcomb](j-n+l-1,l) fi;
+         ss[i]:=ss[i]+co*c[j]*u^(i-j);
+         od;
+      od;
+   od;
+
+for j from 1 to (i+1)*n do q[1,j]:=c[n+j] od;
+
+for i from 0 to k-3 do
+   push:=expand(subs(seq(c[m]=ss[m],m=1..n*(i+1)),p[i]));
+   for j from 0 to (i+1)*n do a[i,j]:=coeff(push,u,j) od;
+
+   if i>0 then 
+
+      for l from 0 to (k-i-2)*(i+1)*n do
+         q[i+1,l]:=0;
+         for m from 0 to i-1 do
+            for j from 0 to (m+1)*n do q[i+1,l]:=q[i+1,l]+a[m,j]*q[i-m,l+j] od;
+            od;
+         od;
+      fi;
+   p[i+1]:=0;
+   for l from 0 to i do
+      for j from 1 to (l+1)*n do p[i+1]:=p[i+1]+a[l,j]*q[i+1-l,j] od;
+      od;
+   p[i+1]:=expand(p[i+1])/(i+2);
+   od;
+
+# ch:=chern(-f[tangentbundle_]);
+
+out:=upperstar(f,lowerstar(f,multiplepoint(f,k-1)));
+for i from 0 to k-2 do
+   sq:=NULL;
+   for r from 1 to (i+1)*n do sq:=sq,c[r]=chern(r,normalbundle(f)) od;
+   out:=out+(-1)^(i+1)*product('k-1-j','j'=0..i)*subs(sq,p[i])*
+                   multiplepoint(f,k-1-i)
+   od;
+expand(out)
+end:
+
+
+### help texts
+
+`help/text/summary` := TEXT(
+`Procedures to generate sheaf objects:`,
+`   `,
+`sheaf                  ( any coherent sheaf )`,
+`bundle                 ( locally free sheaf )`,
+`o                      ( line bundle )`,
+`   `,
+`Generate new sheaves from old sheaves:`,
+`   `,
+`tensor                 ( infix: A &@ B )`,
+`dual`,                         
+`Hom`,
+`End`,
+`determinant            ( line bundle ) `,
+`wedge                  ( exterior powers )`,
+`symm                   ( symmetric powers )`,
+`schurfunctor`,
+`koszul                 ( koszul complex )`,
+`adams  `,                      
+`upperstar              ( infix: f&^*(x) )`,
+`lowershriek            ( infix: f&-!(x) ) `,
+`   `,
+`Procedures to generate variety objects:`,
+`   `,
+`variety                ( any variety )`,
+`proj                   ( projective space )`,
+`grass                  ( Grassmann variety )`,
+`toricvariety           ( toric variety )`,
+`wproj                  ( weighted projective space )`,
+`curve`,
+`POINT                  ( not a procedure but a constant )`,
+`   `,
+`Generate new varieties from existing ones:`,
+`   `,
+`totalspace             ( from Proj or Grass )`,
+`blowup                 ( no tangent bundle )`,
+`blowuppoints           ( no tangent bundle )`,
+`productvariety         ( under some hypothesis )`,
+`bundlesection          ( zerolocus of a section )`,
+`insertedge             ( insert an edge into the fan of a toric variety )`,
+`   `,
+`Procedures to generate morphisms:`,
+`   `,
+`morphism       `,      
+`Proj                   ( Projective bundle )`,
+`Grass                  ( Grassmann bundle )`,
+`blowup`,
+`productvariety`,
+`bundlesection`,
+`   `,
+`Generate new morphisms from existing ones:`,
+`   `,
+`compose                        ( two morphisms )`,
+`blowup`,
+`   `,
+`Various functions on sheaves, varieties and`,
+`morphisms:`,
+`   `,
+`rank`,
+`chern`,
+`segre`,
+`todd`,
+`schur `,
+`porteous`,
+`multiplepoint          ( of a morphism )`,
+`integral               ( of zero-cycle )`,
+`chi                    ( Euler-Poincare char.)`,
+`lowerstar              ( infix: f&-*(x) )`,
+`upperstar              ( infix: f&^*(x) )`,
+`lowershriek            ( infix: f&-!(x) )`,
+`normalbundle`,
+`dimension`,
+`tangentbundle`,
+`   `,
+`Miscellanous utilities:`,
+`   `,
+`grobnerbasis           ( for relation ideal )`,
+`normalform             ( mod grobnerbasis )`,
+`integral2              ( using normalform )`,
+`division               ( infix: A &/ B )`,
+`twist                  ( essentially c(E &@ L) )`,
+`whichcone              ( finds which cone of a fan a vector lies in )`,
+`down                   ( setvariety to base of bundle )`,
+`up                     ( setvariety to totalspace of bundle)`,
+`setvariety             ( make variety current )`,
+`where                  ( display currentvariety and dimension)`,
+`codimension            ( of cycle class )`,
+`monomials              ( of a variety )`,
+`verifyduality          ( if in doubt.. )`,
+`   `,
+`Computation commands:`,
+`   `,
+`monomialvalues         ( integrals of 0-cycles )`,
+`additivebasis          ( compute dual bases )`,
+`toddclass              ( compute Todd class )`,
+`   `,
+`Interface to inner workings of schubert:`,
+`   `,
+`strip                  ( frequent simplification )`,
+`DIM                    ( truncate computations )`,
+`   `,
+`Internal procedures used by schubert:`,
+`  `,
+```schubert/expp```,
+#```schubert/exp2```,
+```schubert/logg```,
+```schubert/lookup```,
+```schubert/rankblock```,
+```schubert/tosmatrix```,
+```schubert/unitriangularinverse```,
+```schubert/maptounitvector```,
+`   `
+):
+
+`help/text/strip` := TEXT(
+`FUNCTION: strip - simplify a sheaf as necessary`,
+`   `,
+`CALLING SEQUENCES: strip(A)`,
+`   `,
+`PARAMETERS: A - an expression`,
+`   `,
+`SYNOPSIS:   `,
+`- strip is used to simplify a class; for example, to effect `,
+`  simplifications implied by relations in the Chow ring.`,
+`- strip is intended to be redefined by the user if needed.  The default is `,
+`  strip = expand.  `,
+`- strip is called by many procedures which manipulate sheaf objects, but`,
+`  not all.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> strip((x+y)^2);`,
+`   `,
+`                                 2            2`,
+`                                x  + 2 x y + y`,
+`   `,
+`> strip:=proc(x) subs(seq(a^i=0,i=2..10),expand(x)) end: DIM:=5: `,
+`> o(a)&@o(b);`,
+`   ` ,
+`                        2  2    2            3  3        3    2         4  4`,
+`   1 + b t + a t + 1/2 b  t  + t  a b + 1/6 b  t  + 1/2 t  a b  + 1/24 b  t`,
+`   `,
+`               4    3          5  5         5    4`,
+`        + 1/6 t  a b  + 1/120 b  t  + 1/24 t  a b`,
+`   `
+):
+
+`help/text/sheaf` := TEXT(
+`FUNCTION: sheaf - creates a sheaf object with given chern classes`,
+`   `,
+`CALLING SEQUENCES: sheaf(rank,classes)  `,
+`                   sheaf(rank,classes,variety)`,
+`   `,
+`PARAMETERS: rank - a non-negative integer`,
+`            classes - a list`,
+`            variety - the name of a variety object`,
+`   `,
+`SYNOPSIS:   `,
+`- The call sheaf(rank,classes) returns the Chern character of a sheaf of rank`,
+`  equal to rank, with Chern classes cat('c',i) determined by [c1..ck]=classes.`,
+`  All unspecified Chern classes are zero.  The resulting Chern character is`,
+`  truncated in dimension DIM + 1`,
+`- The call sheaf(rank,classes,variety) is as above, except that the result`,
+`  is truncated in dimension one more than the dimension of variety.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> DIM:=2: b:=sheaf(2,[c1,c2]);`,
+`   `,
+`                                                     2   2`,
+`                     b := 2 + c1 t + 1/2 (- 2 c2 + c1 ) t`,
+`   `,
+`> variety(X,dim=1): DIM:=2: b:=sheaf(2,[c1,c2],X);`,
+`   ` ,
+`                                 b := 2 + c1 t`,
+`   `,
+`SEE ALSO: bundle`,
+`   `
+):
+
+`help/text/bundle` := TEXT(
+`FUNCTION: bundle - creates a bundle with generic Chern classes`,
+`   `,
+`CALLING SEQUENCES: bundle(rank,name)  `,
+`                   bundle(rank,name,variety)`,
+`   `,
+`PARAMETERS: rank - a non-negative integer`,
+`            name - a name`,
+`            variety - the name of a variety`,
+`   `,
+`SYNOPSIS:   `,
+`- The call bundle(rank,name) returns the Chern character of a bundle of rank`,
+`  equal to rank.  The Chern classes of the bundle are obtained by`,
+`  concatenation of the degree of the class with name.  The resulting Chern`,
+`  character is truncated in dimension DIM+1.`,
+`- The call bundle(rank,name,variety) is as above, except that the result`,
+`  is truncated in dimension one more than the dimension of variety.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> DIM:=2: b:=bundle(2,c);`,
+`   `,
+`                                                     2   2`,
+`                     b := 2 + c1 t + 1/2 (- 2 c2 + c1 ) t`,
+`   `,
+`> variety(X,dim=1): DIM:=2: b:=bundle(2,c,X);`,
+`   `,
+`                                 b := 2 + c1 t`,
+`   `,
+`SEE ALSO: sheaf, o`,
+`   `
+):
+
+`help/text/o` := TEXT(
+`FUNCTION: o - the Chern character of the line bundle associated to a divisor`,
+`   `,
+`CALLING SEQUENCES: o(d)  `,
+`                   o(d,X)`,
+`   `,
+`PARAMETERS: d - a degree 1 class (a divisor)`,
+`            X - the name of a variety`,
+`   `,
+`SYNOPSIS:   `,
+`- The call o(d) returns the Chern polynomial of the line bundle O(d)`,
+`  associated to the divisor d.  The result is truncated in dimension DIM+1.`,
+`- The call o(d,X) is as above, except that the result`,
+`  is truncated in dimension one more than the dimension of variety.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> DIM:=2: o(d);`,
+`   `,
+`                                             2  2`,
+`                              1 + d t + 1/2 d  t`,
+`   `,
+`> variety(X,dim=1): DIM:=2: o(d,X);`,
+`   ` ,
+`                                    1 + d t`,
+`   `,
+`SEE ALSO: bundle`,
+`   `
+):
+
+`help/text/chern` := TEXT(
+`FUNCTION: chern - the Chern classes of a sheaf`,
+`   `,
+`CALLING SEQUENCES: chern(A)  `,
+`                   chern(p,A)`,
+`                   chern(p,q,A)`,
+`   `,
+`PARAMETERS: A - (the chern character of) a sheaf`,
+`            p,q - integers`,
+`   `,
+`SYNOPSIS:   `,
+`- The call chern(A) returns the total Chern class of the sheaf A, truncated`,
+`  in dimension DIM+1.`,
+`- The call chern(p,A) returns the pth Chern class of A.`,
+`- The call chern(p,q,A)  returns a list consisting of all Chern classes of`,
+`  between degrees p and q inclusive.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> DIM:=4: b:=bundle(4,c): chern(b);`,
+`   `,
+`                                       2       3       4`,
+`                        1 + c1 t + c2 t  + c3 t  + c4 t`,
+`   `,
+`> chern(2,b);`,
+`   ` ,
+`                                       c2`,
+`   `,
+`> chern(2,4,b);`,
+`   `,
+`                                  [c2, c3, c4]`,
+`   `,
+`SEE ALSO: segre`,
+`   `
+):
+
+`help/text/segre` := TEXT(
+`FUNCTION: segre - the Segre classes of a sheaf`,
+`   `,
+`CALLING SEQUENCES: segre(A)`,
+`                   segre(p,A)`,
+`                   segre(p,q,A)`,
+`   `,
+`PARAMETERS: A - the name of a sheaf`,
+`            p,q - integers`,
+`   `,
+`SYNOPSIS:   `,
+`- The call segre(A) returns the total Segre class of the sheaf A, truncated`,
+`  in dimension DIM+1.`,
+`- The call chern(p,A) returns the pth Segre class of A.`,
+`- The call chern(p,q,A)  returns a list consisting of all Segre classes of`,
+`  between degrees p and q inclusive.`,
+`- NB: segre(A)=1/chern(dual(A)), so that in particular s1 = c1.`,
+`  This differs from other standard conventions, e.g. Fulton's book`,
+`  "Intersection Theory".`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> DIM:=3: b:=bundle(3,c): segre(b);`,
+`   `,
+`                                   2   2                     3   3`,
+`              1 + c1 t + (- c2 + c1 ) t  + (c3 - 2 c1 c2 + c1 ) t`,
+`   `,
+`> segre(2,b);`,
+`   ` ,
+`                                            2`,
+`                                   - c2 + c1`,
+`   `,
+`> segre(2,3,b);`,
+`   `,
+`                                  2                   3`,
+`                        [- c2 + c1 , c3 - 2 c1 c2 + c1 ]`,
+`   `,
+`SEE ALSO: chern`,
+`   `
+):
+
+`help/text/todd` := TEXT(
+`FUNCTION: todd - the Todd class of a sheaf`,
+`   `,
+`CALLING SEQUENCE: todd(A)`,
+`   `,
+`PARAMETERS: A - (the Chern character of) a sheaf`,
+`   `,
+`SYNOPSIS:   `,
+`- todd(A) returns the Todd class of the sheaf A, truncated in dimension DIM+1.`,
+`  A is represented by its Chern character.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> DIM:=2: b:=bundle(2,c): todd(b);`,
+`   `,
+`                                            2             2`,
+`                     1 + 1/2 c1 t + (1/12 c1  + 1/12 c2) t`,
+`   `,
+`SEE ALSO: toddclass, chi`,
+`    `
+):
+
+`help/text/tensor` := TEXT(
+`FUNCTION: tensor - the tensor product of two sheaves`,
+`   `,
+`CALLING SEQUENCES: tensor(A,B);  or`,
+`                   A &@ B;`,
+`   `,
+`PARAMETERS: A,B - (the Chern characters of) sheaves`,
+`   `,
+`SYNOPSIS:   `,
+`- The call tensor(A,B) returns the Chern character of the tensor product of A`,
+`  and B.  The result is truncated in dimension DIM+1.  A &@ B (note infix`,
+`  notation) produces the identical result.`,
+`- Tensor may also be used to multiply two classes.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> DIM:=2: b:=bundle(2,c): tensor(b,o(d));`,
+`   `,
+`                                2  2    2            2        2   2`,
+`            2 + 2 d t + c1 t + d  t  + t  c1 d - c2 t  + 1/2 t  c1`,
+`   ` ,
+`SEE ALSO: division`,
+`   ` 
+):
+
+`help/text/&@` := TEXT(
+`FUNCTION: tensor - the tensor product of two sheaves`,
+`   `,
+`CALLING SEQUENCES: tensor(A,B);  or`,
+`                   A &@ B;`,
+`   `,
+`PARAMETERS: A,B - (the Chern characters of) sheaves`,
+`   `,
+`SYNOPSIS:   `,
+`- The call tensor(A,B) returns the Chern character of the tensor product of A`,
+`  and B.  The result is truncated in dimension DIM+1.  A &@ B (note infix`,
+`  notation) produces the identical result.`,
+`- Tensor may also be used to multiply two classes.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> DIM:=2: b:=bundle(2,c): tensor(b,o(d));`,
+`   `,
+`                                2  2    2            2        2   2`,
+`            2 + 2 d t + c1 t + d  t  + t  c1 d - c2 t  + 1/2 t  c1`,
+`   ` ,
+`SEE ALSO: division`,
+`    ` 
+):
+
+`help/text/dual` := TEXT(
+`FUNCTION: dual - the Chern polynomial or character of a sheaf`,
+`   `,
+`CALLING SEQUENCE: dual(A);`,
+`   `,
+`PARAMETERS: A - (the Chern polynomial or character of) a sheaf`,
+`   `,
+`SYNOPSIS:   `,
+`- The call dual(A) returns the dual of the sheaf A.  The result is a Chern`,
+`  polynomial or character according to which one A is.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> DIM:=4: b:=chern(bundle(2,c)): dual(b);`,
+`   `,
+`                                               2`,
+`                                1 - c1 t + c2 t`       
+):
+
+`help/text/adams` := TEXT(
+`FUNCTION: adams - the Adams operator of K-theory`,
+`   `,
+`CALLING SEQUENCE: adams(k,A)`,
+`    `,
+`PARAMETERS:  k - an expression`,
+`             A - a class (polynomial in t)`,
+`   `,
+`SYNOPSIS: `,
+`- adams(k,A) has the effect of multiplying the degree i component of A`,
+`  by k^i.`,
+`- In applications, k is often an integer, and A is the Chern character or`,
+`  Chern polynomial of a sheaf.`,
+`   `,
+`EXAMPLES: `,
+`> DIM:=3: b:=bundle(2,c): adams(2,chern(b));`,
+`   `,
+`                                                 2`,
+`                              1 + 2 c1 t + 4 c2 t`,
+`   `
+):
+          
+`help/text/Hom` := TEXT(
+`FUNCTION: Hom - the Hom sheaf of two sheaves`,
+`   `,
+`CALLING SEQUENCE: Hom(A,B)  `,
+`   `,
+`PARAMETERS: A,B - (Chern characters of) sheaves`,
+`   `,
+`SYNOPSIS:   `,
+`- The call Hom(A,B) returns the Chern character of the sheaf Hom(A,B), where`,
+`  A and B are represented by Chern characters.  The result is truncated in`,
+`  dimension DIM+1.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> proj(3,h,all): Hom(tangentbundle(Ph),o(h));`,
+`   `,
+`                                       2  2        3  3`,
+`                        3 - h t - 1/2 h  t  - 1/6 h  t`,
+`   `, 
+`SEE ALSO:  End   `
+):
+
+`help/text/End` := TEXT(
+`FUNCTION: End - the sheaf of endomorphisms of a sheaf`,
+`   `,
+`CALLING SEQUENCE:  End(A);  `,
+`   `,
+`PARAMETERS: A - (the Chern character of) a sheaf`,
+`   `,
+`SYNOPSIS:   `,
+`- End(A) computes the Chern character of the sheaf End(A), where A is`,
+`  represented by its Chern character.  The result is truncated in dimension`,
+`  DIM+1.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> DIM:=2: b:=bundle(2,c): End(b);`,
+`   `,
+`                                        2    2   2`,
+`                              4 - 4 c2 t  + t  c1`,
+`   `,
+`SEE ALSO:  Hom`,
+`   `
+):
+
+`help/text/rank` := TEXT(
+`FUNCTION: rank - the rank of a sheaf`,
+`   `,
+`CALLING SEQUENCE: rank(A)`,
+`   `,
+`PARAMETERS: A - (the Chern character of) a sheaf`,
+`   `,
+`SYNOPSIS:   `,
+`- rank(A) returns the rank of the sheaf A, where A is represented by its`,
+`  Chern character.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> DIM:=4: b:=bundle(2,c): s3b:=symm(3,b): rank(s3b);`,
+`   `,
+`                                       4`,
+`   `,
+`SEE ALSO:  chern`       
+):
+
+`help/text/determinant` := TEXT(
+`FUNCTION: determinant - the determinant line bundle of a sheaf`,
+`   `,
+`CALLING SEQUENCE:  determinant(A);  `,
+`   `,
+`PARAMETERS: A - (the Chern character or Chern class of) a sheaf`,
+`   `,
+`SYNOPSIS:   `,
+`- determinant(A) computes the Chern character of the determinant line bundle`,
+`  of A,  where A is represented by its Chern character or class.  The result is`,
+`  truncated in dimension DIM+1.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> DIM:=2: b:=bundle(2,c): determinant(b);`,
+`   `,
+`                                              2  2`,
+`                             1 + c1 t + 1/2 c1  t`,
+`SEE ALSO:  o`  
+):
+
+`help/text/wedge` := TEXT(
+`FUNCTION: wedge - the exterior power of a sheaf`,
+`   `,
+`CALLING SEQUENCE: wedge(p,A)`,
+`   `,
+`PARAMETERS: p - an integer`,
+`            A - (the Chern character of) a sheaf`,
+`   `,
+`SYNOPSIS:   `,
+`- wedge(p,A) returns the Chern character of the pth exterior power of the sheaf`,
+`  A, where A is represented by its Chern character.  The result is truncated`,
+`  in dimension DIM+1`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> DIM:=4: b:=bundle(4,c): wedge(3,b);`,
+`   `,
+`                    2         2  2           3        3               3  3`,
+`   4 + 3 c1 t - c2 t  + 3/2 c1  t  - 1/2 c3 t  - 1/2 t  c1 c2 + 1/2 c1  t`,
+`   `,
+`                  4        4               4   2        4      2         4  4`,
+`        - 1/6 c4 t  - 1/3 t  c1 c3 + 1/12 t  c2  - 1/6 t  c2 c1  + 1/8 c1  t`,
+`   `,
+`SEE ALSO:  symm,Symm,schurfunctor,schurfunctor2`       
+):
+
+`help/text/symm` := TEXT(
+`FUNCTION: symm - the symmetric power of a sheaf`,
+`   `,
+`CALLING SEQUENCE:  symm(p,A);  `,
+`   `,
+`PARAMETERS: p - an integer`,
+`            A - (the Chern character of) a sheaf`,
+`   `,
+`SYNOPSIS:   `,
+`- symm(p,A) returns the Chern character of the pth symmetric power of the sheaf`,
+`  A, where A is represented by its Chern character.  The result is truncated`,
+`  in dimension DIM+1.`,
+`- symm(p,A) is usually faster than Symm(p,A) if p is small.`,
+`- symm creates a remember table.`,
+`- symm(p,A) proceeds by iterating p.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> DIM:=2: b:=bundle(2,c): symm(3,b);`,
+`   `,
+`                                            2       2  2`,
+`                        4 + 6 c1 t - 10 c2 t  + 7 c1  t`,
+`   `,
+`SEE ALSO:  Symm, schurfunctor, schurfunctor2, wedge` ,
+`   ` 
+):
+
+`help/text/Symm` := TEXT(
+`FUNCTION: Symm - the pth symmetric power of a sheaf`,
+`   `,
+`CALLING SEQUENCE: Symm(p,A)`,
+`   `,
+`PARAMETERS: p - an integer or a name`,
+`            A - (the Chern character of) a sheaf`,
+`   `,
+`SYNOPSIS:   `,
+`- Symm(p,A) returns the Chern character of the pth symmetric power of the sheaf`,
+`  A, where A is represented by its Chern character.  The result is truncated`,
+`  in dimension DIM+1.`,
+`- Symm(p,A) is usually faster than symm(p,A) if p is large.`,
+`- Symm(p,A) creates the variable SYMM_[A].`,
+`- Symm works by pushing down multiples of the tautological bundle in an `,
+`  associated projective bundle.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> DIM:=2: b:=bundle(2,c): Symm(n,b);`,
+`   `,
+`                            2     2        2                  2        2  2   2`,
+` 1 + 1/2 t n c1 + n + 1/12 t  n c1  - 1/3 t  n c2 + 1/2 t c1 n  + 1/4 t  n  c1`,
+`   `,
+`             2  2           2  3           2  3   2`,
+`      - 1/2 t  n  c2 - 1/6 t  n  c2 + 1/6 t  n  c1`,
+`   `,
+`SEE ALSO:  symm, schurfunctor, schurfunctor2, wedge, lowerstar, Proj` ,
+`   `      
+):
+
+`help/text/division` := TEXT(
+`FUNCTION: division - the quotient of truncated power series in t`,
+`   `,
+`CALLING SEQUENCES: division(A,B)`,
+`                   A &/ B`,
+`   `,
+`PARAMETERS: A,B - truncated power series in t `,
+`   `,
+`SYNOPSIS:   `,
+`- division(A,B) gives the quotient of the classes A and B.  B must have `,
+`  non-vanishing constant term.  The result is truncated in dimension DIM+1.`,
+`  A &/ B (note infix notation) produces the identical result.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> DIM:=3: a:=chern(bundle(2,c)): b:=chern(o(h)): division(a,b);`,
+`   `,
+`                                       2   2              2       3   3`,
+`        1 + (c1 - h) t + (c2 - h c1 + h ) t  + (- h c2 + h  c1 - h ) t`,
+`   `,
+`> b &/ a;`,
+`                                   2   2                           2     3   3`,
+` 1 + (h - c1) t + (- c2 - h c1 + c1 ) t  + (- h c2 + 2 c1 c2 + h c1  - c1 ) t`,
+`   `,
+`SEE ALSO: tensor`,
+`   `
+):
+
+`help/text/&/` := TEXT(
+`FUNCTION: division - the quotient of truncated power series in t`,
+`   `,
+`CALLING SEQUENCES: division(A,B)`,
+`                   A &/ B`,
+`   `,
+`PARAMETERS: A,B - truncated power series in t `,
+`   `,
+`SYNOPSIS:   `,
+`- division(A,B) gives the quotient of the classes A and B.  B must have `,
+`  non-vanishing constant term.  The result is truncated in dimension DIM+1.`,
+`  A &/ B (note infix notation) produces the identical result.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> DIM:=3: a:=chern(bundle(2,c)): b:=chern(o(h)): division(a,b);`,
+`   `,
+`                                       2   2              2       3   3`,
+`        1 + (c1 - h) t + (c2 - h c1 + h ) t  + (- h c2 + h  c1 - h ) t`,
+`   `,
+`> b &/ a;`,
+`                                   2   2                           2     3   3`,
+` 1 + (h - c1) t + (- c2 - h c1 + c1 ) t  + (- h c2 + 2 c1 c2 + h c1  - c1 ) t`,
+`   `,
+`SEE ALSO: tensor`,
+`   `
+):
+
+`help/text/twist` := TEXT(
+`FUNCTION: twist - the Chern class of the twist of a sheaf by a line bundle.`,
+`   `,
+`CALLING SEQUENCE:  twist(r,A,y);  `,
+`   `,
+`PARAMETERS: r - a non-negative integer`,
+`            A - (the Chern polynomial of) a sheaf`,
+`            y - a degree one class or its name`,
+`   `,
+`SYNOPSIS:   `,
+`- twist(r,A,y) computes the Chern polynomial of the tensor product of`,
+`  B with the line bundle O(y), where B is a rank r sheaf with Chern `,
+`  polynomial A.  `,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> b:=1+c1*t+c2*t^2: twist(2,b,y);`,
+`   `,
+`                                         2   2`,
+`                     1 + t (2 y + c1) + t  (y  + c1 y + c2)`,
+`SEE ALSO:  chern,o`  ,
+`   `
+):
+
+`help/text/schur` := TEXT(
+`FUNCTION: schur - the schur function in the Chern classes of a sheaf`,
+`   `,
+`CALLING SEQUENCES:  schur(partition,A)  `,
+`                    schur(partition,partition2,A)`,
+`   `,
+`PARAMETERS: A - (the Chern character of) a sheaf`,
+`            partition,partition2 - a list of integers`,
+`   `,
+`SYNOPSIS:   `,
+`- schur(partition,A) computes the schur function in the Chern classes of the`, 
+`  sheaf A, where A is represented by its Chern character.`,
+`- schur(partition,partition,A) computes the skew schur function.`,
+`- In either case, the package SF written by John Stembridge is called, and so`,
+`  SF must be accessible to Maple.`,
+`- The schubert cycles on a Grassmannian can be calculated by applying schur to`,
+`  the universal quotient bundle.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> grass(3,5,c): sigma21:=schur([2,1],Qc);`,
+`   `,
+`                             sigma21 := c1 c2 - c3`,
+`   `,
+`SEE ALSO:  schurfunctor, schurfunctor2, porteous2`  ,
+`   `
+):
+
+`help/text/porteous` := TEXT(
+`FUNCTION: porteous - Porteous' formula`,
+`   `,
+`CALLING SEQUENCE: porteous(A,B,k)`,
+`   `,
+`PARAMETERS: A ,B - (the Chern characters of) sheaves`,
+`            k - an integer`,
+`   `,
+`SYNOPSIS:   `,
+`- porteous(A,B,k) returns the class of the locus over which a general morphism`,
+`  f from A to B has rank at most k, that is, the locus of vanishing of the`,
+`  (k+1) by (k+1) minors of f.`,
+`- It is computed by expanding the determinant giving Porteous' formula.`,
+`- porteous2(A,B,k) computes the same thing similarly using the package SF`,
+`  written by John Stembridge.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> DIM:=4: a:=bundle(2,c): b:=bundle(3,d): porteous(a,b,1);`,
+`   `,
+`                                        2`,
+`                            - d1 c1 + c1  + d2 - c2`,
+`   `,
+`SEE ALSO:  porteous2`,
+`   `       
+):
+
+`help/text/porteous2` := TEXT(
+`FUNCTION: porteous2 - Porteous' formula`,
+`   `,
+`CALLING SEQUENCE: porteous2(A,B,k)`,
+`   `,
+`PARAMETERS: A ,B - (the Chern characters of) sheaves`,
+`            k - an integer`,
+`   `,
+`SYNOPSIS:   `,
+`- porteous(A,B,k) returns the class of the locus over which a general morphism`,
+`  f from A to B has rank at most k, that is, the locus of vanishing of the`,
+`  (k+1) by (k+1) minors of f.`,
+`- It is computed via a schur function.  This uses the package SF written by `,
+`  John Stembridge, as so SF must be accessible to Maple.`,
+`- porteous(A,B,k) computes the same thing similarly, without SF.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> DIM:=4: a:=bundle(2,c): b:=bundle(3,d): porteous2(a,b,1);`,
+`   `,
+`                                        2`,
+`                            - d1 c1 + c1  + d2 - c2`,
+`   `,
+`SEE ALSO:  porteous, schur` ,
+`   `      
+):
+
+`help/text/koszul` := TEXT(
+`FUNCTION: koszul - (the homology of) the koszul complex`,
+`   `,
+`CALLING SEQUENCE:  koszul(A);  `,
+`   `,
+`PARAMETERS: A - (the Chern character of) a sheaf`,
+`   `,
+`SYNOPSIS:   `,
+`- koszul(A) computes the alternating sum of the Chern characters of the`,
+`  exterior powers of A, which is represented by its Chern character.  The `,
+`  result is truncated in dimension DIM+1.`,
+`- koszul(A) computes the Chern character of the homology of the koszul  `,
+`  complex on a map from A to the structure sheaf.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> proj(3,h): chern(koszul(3*o(-h))); #the Chern class of a point in P^3.`,
+`   `,
+`                                         3  3`,
+`                                  1 + 2 h  t`,
+`   `
+):
+
+`help/text/schurfunctor` := TEXT(
+`FUNCTION: schurfunctor - a Schur functor applied to a sheaf`,
+`   `,
+`CALLING SEQUENCE: schurfunctor(partition,A)`,
+`                  schurfunctor(partition,partition2,A)`,
+`   `,
+`PARAMETERS: partition, partition2 - a list of integers (partitions)`,
+`            A - (the Chern character of) a sheaf`,
+`   `,
+`SYNOPSIS:   `,
+`- schurfunctor(partition,A) gives the Chern character of the corresponding`,
+`  Schur functor applied to the sheaf A, where A is represented by its`,
+`  Chern character.`,
+`- schurfunctor(partition,partition2,A) does the analogous thing with the`,
+`  skew Schur functor.`,
+`- the package SF written by John Stembridge is called in either case, and so`,
+`  must be accessible to Maple.`,
+`- schurfunctor2(partition,A) computes the same thing as`,
+`  schurfunctor(partition,A) by a different method.`,   
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> DIM:=4: b:=bundle(2,c): schurfunctor([2],b)-symm(2,b);`,
+`   `,
+`                                       0`,
+`   `,
+`> DIM:=4: b:=bundle(3,c): schurfunctor([1,1],b)-wedge(2,b);`,
+`   `,
+`                                       0`,
+`   `,
+`SEE ALSO:  schur, schurfunctor2`  ,
+`   `     
+):
+
+`help/text/schurfunctor2` := TEXT(
+`FUNCTION: schurfunctor2 - a Schur functor applied to a sheaf`,
+`   `,
+`CALLING SEQUENCE: schurfunctor2(partition,A)`,
+`   `,
+`PARAMETERS: partition - a list of integers (a partition)`,
+`            A - (the Chern character of) a sheaf`,
+`   `,
+`SYNOPSIS:   `,
+`- schurfunctor2(partition,A) gives the Chern character of the corresponding`,
+`  Schur functor applied to the sheaf A, where A is represented by its`,
+`  Chern character.`,
+`- schurfunctor2 is calculated via Pieri's formula. `,
+`- A remember table is created.`,
+`- schurfunctor(partition,A) computes the same thing as`,
+`  schurfunctor2(partition,A) by a different method.`,   
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> DIM:=4: b:=bundle(2,c): schurfunctor2([2],b)-symm(2,b);`,
+`   `,
+`                                       0`,
+`   `,
+`> DIM:=4: b:=bundle(3,c): schurfunctor2([1,1],b)-wedge(2,b);`,
+`   `,
+`                                       0`,
+`   `,
+`SEE ALSO:  schur, schurfunctor2` ,
+`   `      
+):
+
+`help/text/variety` := TEXT(
+`FUNCTION: variety - construct a variety object`,
+`   `,  
+`CALLING SEQUENCE: variety(X,<options>)`,
+`   `,   
+`PARAMETERS: X - (an expression that evaluates to) a name`,
+`   `,    
+`  Options are mainly of the form option=value, they are separated by`,
+`  commas and may come in any order, except bases or all,`,
+`  which must come at the end.`,
+`  Options are:`,
+`    dimension=(a non-negative integer)`,
+`    variables=(a list of names)`,
+`    degrees=(a list of positive integers) `,
+`    relations=(a list of relations)`,
+`    point=(the class of a point)`,
+`    tangentbundle=(sheaf object)`,
+`    bases or all`,
+`  Only the first three letters in the option names are significant.`,
+`    `,         
+`SYNOPSIS: `,  
+`- A table named X is created, with entries corresponding to the given`,
+`  options. If the dimension option is not given, the dimension of X`,
+`  is set to the current value of DIM.`,
+`- The variable currentvariety_ is set to X, and DIM is set accordingly.`,
+`- If the relations option is given, monomialvalues is called.`,
+`  bases or all results in the calling of additivebasis.`,
+`   `,    
+`EXAMPLES: `,  
+`> variety(P1xP1,dim=2,var=[h,g],degs=[1,1],rels=[h^2,g^2],point=h*g);`,
+`   `,
+`                    currentvariety_ is P1xP1, DIM is 2`,
+`   `,   
+`SEE ALSO:  proj, grass, curve, setvariety, monomialvalues, additivebasis`,
+`   ` 
+):
+
+`help/text/setvariety` := TEXT(
+`FUNCTION: setvariety - make a given variety the current variety`,
+`   `,
+`CALLING SEQUENCE: setvariety(X)`,
+`   `,
+`PARAMETERS: X - the name of a variety`,
+`   `,
+`SYNOPSIS:   `,
+`- X is made the currentvariety_, and DIM is set to X[dimension_].`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> variety(X,dim=1): variety(Y,dim=2): setvariety(X);`,
+`   `,
+`                      currentvariety_ is X, DIM is 1`,
+`   `,
+`SEE ALSO:  variety, DIM`,   
+`    `   
+):
+
+`help/text/where` := TEXT(
+`FUNCTION: where - display the currentvariety_ and DIM variables`,
+`   `,
+`CALLING SEQUENCE: where()`,
+`   `,
+`PARAMETERS: none`,
+`   `,
+`SYNOPSIS:   `,
+`- the values of currentvariety_ and DIM are displayed.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> proj(2,h): where();`,
+`   `,
+`                      currentvariety_ is Ph, DIM is 2`,
+`   `,
+`SEE ALSO:  variety, DIM`,   
+`    `   
+):
+
+`help/text/toddclass` := TEXT(
+`FUNCTION: toddclass - the Todd class of a variety or bundle`,
+`   `,
+`CALLING SEQUENCE:  toddclass(X)  `,
+`   `,
+`PARAMETERS: X - the name of a variety, or a Grassmannian or projective bundle`,
+`   `,
+`SYNOPSIS:   `,
+`- The Todd class is computed and stored in X[toddclass_]. X is made`,
+`  the currentvariety_.`,
+`- If X is the structure morphism of a bundle, then the relative Todd class`,
+`  is computed.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> DIM:=2: variety(X,dim=2,tan=bundle(2,c)): toddclass(X);`,
+`   `,
+`                            toddclass computed for X`,
+`   `,
+`> X[toddclass_];`,
+`                                            2             2`,
+`                     1 + 1/2 c1 t + (1/12 c1  + 1/12 c2) t`,
+`    `,
+`SEE ALSO:  todd, chi` ,
+`   ` 
+):
+
+`help/text/monomials` := TEXT(
+`FUNCTION: monomials - list all monomials in the variables`,
+`    `,    
+`CALLING SEQUENCE:`,
+`    monomials(X)`,
+`    monomials(X,n)`,
+`    monomials(n,vars,degs)`,
+`   `,    
+`PARAMETERS:`,
+`    X - the name of a variety, or a Grassmannian or projective bundle`,
+`    n - non-negative integer`,
+`    vars - list of variables`,
+`    degs - list of degrees`,
+`    `,       
+`SYNOPSIS: `,
+`- monomials(X,n) computes all monomials in the variables of X up to`,
+`  weighted degree n (or the dimension of X, if that is larger or if `,
+`  n is not specified). These are stored in a table X[monomials_]. `,
+`- The value returned by monomials(X,n) is X[monomials_][n]. `,
+`- The value returned by monomials(X) is X[monomials_].`,
+`- monomials(n,vars,degs) returns a list of all monomials of weighted`,
+`  degree n in the variables vars with the weights degs.`,
+`    `,     
+`EXAMPLES:`,
+`> variety(P1xP1,dim=2,var=[h,g],degs=[1,1]): monomials(P1xP1,2);`,
+`   `,
+`                                   2        2`,
+`                                 [h , h g, g ]`,
+`   `,
+`> monomials(3,[c1,c2],[1,2]);`,
+`                                     3`,
+`                                  [c1 , c1 c2]`,
+`   `,   
+`SEE ALSO:  monomialvalues`,
+`   `
+):
+ 
+`help/text/monomialvalues` := TEXT(
+`FUNCTION: monomialvalues - compute integrals of top degree monomials`,
+`   `,    
+`CALLING SEQUENCE: monomialvalues(X)`,
+`   `,  
+`PARAMETERS:  X - the name of a variety`,
+`   `,       
+`SYNOPSIS:  `, 
+`- The integrals of all monomials of degree the dimension of X are`,
+`  computed and stored in a table X[monomialvalues_]. X needs to have`,
+`  assigned a generating set of relations. `,
+`- If X[point_] has not been assigned, the values obtained are only determined`,
+`  up to an (unknown) common scalar. It may be possible to correct this later`,
+`  if one comes up with a different way to compute the class of a point, for`,
+`  example if the topological Euler characteristic is known the Gauss-Bonnet`,
+`  formula may be used.`,  
+`   `,    
+`EXAMPLES:  `, 
+`> variety(X,dim=2,var=[h,e],deg=[1,1],poi=h^2): X[relations_]:=[h^2+e^2,h*e]:`,
+`> monomialvalues(X);`,
+`   `,
+`             computed integral of all 3 monomials of top degree`,
+`   `,    
+`> eval(X[monomialvalues_]);`,
+`   `,
+`                                  table([`,
+`                                      h e = 0`,
+`                                       2`,
+`                                      e  = -1`,
+`                                       2`,
+`                                      h  = 1`,
+`                                  ])`,
+`   `,
+`SEE ALSO:  monomials, integral`,
+`   `
+):
+
+
+`help/text/integral` := TEXT(
+`FUNCTION: integral - compute integral of zero-cycle`,
+`   `,   
+`CALLING SEQUENCES:`,
+`   integral(c)`,
+`   integral(X,c)`,
+`   `,   
+`PARAMETERS:`,
+`   X - the name of a variety`,
+`   c - a zero-cycle (expression homogeneous of degree X[dimension_])`,
+`   `,      
+`SYNOPSIS:`,   
+`- The integral of the zero-cycle c is computed. If X is not given,`,
+`  currentvariety_ is used. If X is the total space of a bundle, the`,
+`  integral is computed by pushdown followed by integration downstairs.`,
+`  Otherwise, if X[monomialvalues_] has not been assigned, the calling sequence`,
+`  is returned unevaluated.`,
+`   `,   
+`EXAMPLES:`,   
+`> variety(P1xP1,dim=2): integral(P1xP1,(g+h)^2);`,
+`   `,
+`                                                  2`,
+`                           integral(P1xP1, (h + g) )`,
+`   `,
+`> variety(P1xP1,dim=2,var=[h,g],deg=[1,1],rel=[h^2,g^2],poi=g*h): `,
+`> integral(P1xP1,(g+h)^2);`,
+`   `,
+`                               2`,
+`   `,   
+`SEE ALSO:  integral2, monomialvalues, Grass, Proj, totalspace`,
+`   `
+):
+
+`help/text/chi` := TEXT(
+`FUNCTION: chi - compute Euler-Poincare characteristic`,
+`   `,   
+`CALLING SEQUENCES:`,
+`   chi(F)`,
+`   chi(X,F)`,
+`   `,   
+`PARAMETERS:`,
+`   X - the name of a variety`,
+`   F - (The Chern character of a) sheaf`,
+`   `,      
+`SYNOPSIS:   `,
+`- Computes the Euler-Poincare characteristic of a sheaf F using`,
+`  Riemann-Roch. If X is not given, currentvariety_ is used.`,
+`  X[tangentbundle_] must be assigned, toddclass(X) will be called`,
+`  if necessary. On the other hand, relations or monomialvalues`,
+`  need not be given, so "Riemann-Roch theorems" come out.`,
+`   `, 
+`  Caveat: If the sheaf F is given in a way that involves computation,`,
+`          like o(n*h), this is computed with the current value of DIM.`,
+`          It is recommended to setvariety(X) before such constructions.`,
+`   `,  
+`EXAMPLES:  `, 
+`> proj(1,h,all): proj(1,g,all): productvariety(P1xP1,Ph,Pg,p1,p2):`,
+`> chi(o(n*h+m*g));`,
+`   `,
+`                                m + n m + 1 + n`,
+`   `,
+`> DIM:=2: variety(S,tangentbundle=bundle(2,c)): chi(o(D));`,
+`   `,
+`                              2                     2`,
+`             integral(S, 1/2 D  + 1/2 c1 D + 1/12 c1  + 1/12 c2)`,
+`   `,
+`SEE ALSO: integral, monomialvalues, toddclass, lowershriek`,
+`   `
+):
+
+`help/text/additivebasis` := TEXT(
+`FUNCTION: additivebasis - compute a pair of dual bases for N*(X)`,
+`   `,   
+`CALLING SEQUENCE: additivebasis(X)`,
+`   `,   
+`PARAMETERS: X - the name of a variety`,
+`   `,      
+`SYNOPSIS:  `, 
+`- A pair of dual bases are computed and stored in the tables`,
+`  X[basis_] and X[dualbasis_]. Each entry is a list. For example`,
+`  X[basis_][1] is a list with a basis for Pic(X) as entries.`,
+`- If necessary, monomialvalues(X) is called.  So either X[monomialvalues_] `,
+`  must already exist, or X must have a generating set of relations already`,
+`  assigned.`,
+`- The primary use for these bases is computation of direct images`,
+`  for a morphism into X, and for computing betti numbers. `,
+`   `,   
+`EXAMPLES:`,
+`> variety(X,dim=2,var=[H,E],deg=[1,1],rel=[E*H,E^2+H^2],point=H^2):`,
+`> additivebasis(X); #X is P^2 blown up at a point.`,
+`   `,
+`                      a pair of dual bases computed for X`,
+`   `,
+`> eval(X[basis_]);`,
+`   `,
+`                                 table([`,
+`                                     0 = [1]`,
+`                                     1 = [H, E]`,
+`                                             2`,
+`                                     2 = [- E ]`,
+`                                 ])`,
+`   `,
+`> eval(X[dualbasis_]);`,  
+`   `,
+`                                table([`,
+`                                    0 = [1]`,
+`                                    1 = [H, - E]`,
+`                                            2`,
+`                                    2 = [- E ]`,
+`                                ])`,
+`   `,
+`   `,
+`SEE ALSO: monomialvalues, verifyduality, betti`,
+`   `
+):
+
+`help/text/betti` := TEXT(
+`FUNCTION: betti - compute betti numbers for a variety`,
+`   `,   
+`CALLING SEQUENCES: betti(X)`,
+`                   betti(X,n)`,
+`   `,   
+`PARAMETERS: X - the name of a variety`,
+`            n - a nonegative integer <= dim(X)`,
+`   `,      
+`SYNOPSIS:  `, 
+`- The betti numbers in schubert means the dimensions of the graded`,
+`  pieces of the numerical intersection ring, so they are the`,
+`  numbers of elements in each degree in X[basis_].`,
+`- X must have a basis computed for betti to work. `,
+`- With one argument, a list of all betti numbers are returned.`,
+`  With two arguments, only the n-th betti number is returned.`,
+`- Note that topological betti numbers have twice the index of`,
+`  the ones used by schubert.`,
+`   `,   
+`EXAMPLES:`,
+`> variety(X,dim=2,var=[H,E],deg=[1,1],rel=[E*H,E^2+H^2],point=H^2):`,
+`> additivebasis(X): #X is P^2 blown up at a point.`,
+`> betti(X);`,
+`   `,
+`                                   [1, 2, 1]`,
+`   `,
+`> betti(X,1);`,  
+`   `,
+`                                       2`,
+`SEE ALSO: additivebasis`
+):
+
+`help/text/verifyduality` := TEXT(
+`FUNCTION: verifyduality - utility for checking that dual bases are correct`,
+`   `,
+`CALLING SEQUENCE: verifyduality(X)`,
+`   `,
+`PARAMETERS: X - the name of a variety`,
+`   `,
+`SYNOPSIS:   `,
+`- verifyduality(X) multiplies the classes of complementary degrees and`,
+`  integrates the resulting zero cycles, printing the results.  Each printed`,
+`  matrix will be an identity matrix if the bases are indeed dual.`,
+`- X[basis_] and X[dualbasis_] are needed.  This utility should not be`,
+`  needed if X[basis_] and X[dualbasis_] were created using additivebasis.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> grass(2,4,c,basis): verifyduality(Gc);`,
+`   `,
+`                                 det [ 1 ] = 1`,
+`   `,
+`                                 det [ 1 ] = 1`,
+`   `,
+`                                   [ 1  0 ]`,
+`                               det [      ] = 1`,
+`                                   [ 0  1 ]`,
+`  `,
+`                                 det [ 1 ] = 1`,
+`   `,
+`                                 det [ 1 ] = 1`,
+`   `,
+`SEE ALSO:  additivebasis, integral`  ,
+`   `     
+):
+
+`help/text/codimension` := TEXT(
+`FUNCTION: codimension - the codimension of a class`,
+`   `,
+`CALLING SEQUENCE: codimension(Y,y)`,
+`   `,
+`PARAMETERS: Y - the name of a variety`,
+`            y - a class on Y`,
+`   `,
+`SYNOPSIS:   `,
+`- codimension(Y,y) returns the codimension of y as a class on Y. `,
+`- If y is not equidimensional, the maximum of the codimensions of the `,
+`  components is returned.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> grass(2,4,c): codimension(Gc,c2*c1+2*c1^2);`,
+`   `,
+`                                       3`,
+`   `,
+`SEE ALSO:  variety`  ,
+`   `     
+):
+
+`help/text/morphism` := TEXT(
+`FUNCTION: morphism - construct a morphism object`,
+`   `,
+`CALLING SEQUENCES: morphism(f,X,Y)`,
+`                   morphism(f,X,Y,sb)`,
+`   `,
+`PARAMETERS: X,Y - names of a varieties`,
+`            sb - a list of substitutions.  Can be either of the form`,
+`                 [s1,...,sn], where n is the number of variables of Y, or`,
+`                 [v1=s1,...,vk=sk], and the vi are variables of Y.`,
+`   `,
+`SYNOPSIS:   `,
+`- morphism(f,X,Y,sb) creates a table for the morphism object f.  f[source_]`,
+`  is set to X, f[target_] is set to Y, and f[dimension_] is set to the `,
+`  relative dimension X[dimension_]-Y[dimension_].  The substitutions become`,
+`  f[upperstardata_], if substitutions are given.  The substitions are just`,
+`  the pullbacks to X of the generating classes on Y.`,
+`- If the substitution list is given in the form [s1,...,sn], the substitutions`,
+`  are v1=s1,...,vn=sn, where the vi are the variables of Y in the order given`,
+`  in Y[variables_].`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> proj(2,h): proj(5,H): morphism(f,Ph,PH,[2*h]); #the Veronese map.`,
+`   `,
+`                                       f`,
+`   `,
+`> f[upperstardata_];`,
+`   `,
+`                                    H = 2 h`,
+`   `,
+`SEE ALSO:  variety, lowerstar, lowershriek, upperstar` ,
+`   `     
+):
+
+`help/text/compose` := TEXT(
+`FUNCTION: compose - composition of two morphisms`,
+`   `,
+`CALLING SEQUENCE: compose(h,g,f)`,
+`   `,
+`PARAMETERS: h,g,f - names of morphisms`,
+`   `,
+`SYNOPSIS:   `,
+`- compose(h,g,f) creates the morphism object h to be the composition gf.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> curve(C,g,p): proj(2,h): proj(5,H): morphism(f,C,Ph,[3*p]): `,
+`> morphism(i,Ph,PH,[2*h]): compose(j,i,f): j[upperstardata_];`,
+`   `,
+`                                    H = 6 p`,
+`   `,
+`SEE ALSO:  morphism`  ,
+`   `     
+):
+
+`help/text/normalbundle` := TEXT(
+`FUNCTION: normalbundle - the normal bundle of a morphism`,
+`   `,
+`CALLING SEQUENCE: normalbundle(f)`,
+`   `,
+`PARAMETERS: f - the name of a morphism`,
+`   `,
+`SYNOPSIS:   `,
+`- normalbundle(f) returns the Chern character of the virtual normal bundle of `,
+`  the morphism f.   Its negative is stored as f[tangentbundle_] if this has`,
+`  not yet been computed.`,
+`- If f is a bundle morphism, then f[tangentbundle_] is the relative tangent`,
+`  bundle, and may be created by the bundle procedures Grass and Proj.`,
+`- If f[tangentbundle_] is not assigned, then the tangent bundle of the source`,
+`  and target of f is used.  These are used in unevaluated form if they have not`,
+`  been assigned.  Warning: in this form, the tangent bundle of the target will`,
+`  not be pulled back to the source.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> proj(2,h): proj(5,H): morphism(f,Ph,PH,[2*h]): normalbundle(f);`,
+`   `,
+`                   - Ph[tangentbundle_] + PH[tangentbundle_]`,
+`   `,
+`> proj(2,h,all): proj(5,H,all): morphism(f,Ph,PH,[2*h]): normalbundle(f);`,
+`   `,
+`                                               2  2`,
+`                             3 + 9 h t + 21/2 h  t`,
+`  `,
+`SEE ALSO:  morphism, Grass, Proj, upperstar, tangentbundle`  ,
+`   `     
+):
+
+`help/text/tangentbundle` := TEXT(
+`FUNCTION: tangentbundle - the tangent bundle of a variety`,
+`   `,
+`CALLING SEQUENCE: tangentbundle(X)`,
+`   `,
+`PARAMETERS: X - the name of a vareity`,
+`   `,
+`SYNOPSIS:   `,
+`- returns X[tangentbundle_], the Chern character of the tangentbundle of X`,
+`- calculates the tangent bundle and Todd class of X as well, if X is a`,
+`  projective space, grassmannian, projective bundle, or grassmann bundle.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> proj(2,h,all): tangentbundle(Ph);`,
+`  `,
+`                                              2  2`,
+`                             2 + 3 h t + 3/2 h  t`,
+`   `,
+`SEE ALSO:  variety, normalbundle`  ,
+`   `     
+):
+
+`help/text/dimension` := TEXT(
+`FUNCTION: dimension - the dimension of a variety`,
+`   `,
+`CALLING SEQUENCE: dimension(X)`,
+`   `,
+`PARAMETERS: X - the name of a vareity`,
+`   `,
+`SYNOPSIS:   `,
+`- returns X[dimension_], the dimension of X`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> grass(3,6,c): dimension(Gc);`,
+`  `,
+`                                       9`,
+`   `,
+`SEE ALSO:  variety`  ,
+`   `     
+):
+
+`help/text/upperstar` := TEXT(
+`FUNCTION: upperstar - pullback by a morphism`,
+`   `,
+`CALLING SEQUENCES: upperstar(f,y)`,
+`                   f &^* y `,
+`   `,
+`PARAMETERS: f - the name of a morphism`,
+`            y - a polynomial (class on the target of f)`,
+`   `,
+`SYNOPSIS:   `,
+`- upperstar(f,y) computes the pullback of y to x via f.  f &^* y (note`,
+` infix notation) is identical.`,
+`- y may be either a sheaf object on the target of f (truncated power series in`,
+`  t), or a homogeneous class on the target of f.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> curve(C,3,p): proj(3,h,all): morphism(f,C,Ph,[6*p]): `,
+`> upperstar(f,Ph[tangentbundle_]);`,
+`   `,
+`                                   3 + 24 p t`,
+`   `,
+`> f&^*(5*h);`,
+`   `,
+`                                      30 p`,
+`   `,
+`SEE ALSO:  morphism, normalbundle`  ,
+`   `     
+):
+
+`help/text/&^*` := TEXT(
+`FUNCTION: upperstar - pullback by a morphism`,
+`   `,
+`CALLING SEQUENCES: upperstar(f,y)`,
+`                   f &^* y `,
+`   `,
+`PARAMETERS: f - the name of a morphism`,
+`            y - a polynomial (class on the target of f)`,
+`   `,
+`SYNOPSIS:   `,
+`- upperstar(f,y) computes the pullback of y to x via f.  f &^* y (note`,
+`  infix notation) is identical.`,
+`- y may be either a sheaf object on the target of f (truncated power series in`,
+`  t), or a homogeneous class on the target of f.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> curve(C,3,p): proj(3,h,all): morphism(f,C,Ph,[6*p]): `,
+`> upperstar(f,Ph[tangentbundle_]);`,
+`   `,
+`                                   3 + 24 p t`,
+`   `,
+`f&^*(5*h);`,
+`   `,
+`                                      30 p`,
+`   `,
+`SEE ALSO:  morphism, normalbundle`  ,
+`   `     
+):
+
+`help/text/lowerstar` := TEXT(
+`FUNCTION: lowerstar - pushforward by a morphism`,
+`   `,
+`CALLING SEQUENCES: lowerstar(f,y)`,
+`                   f &-* y `,
+`   `,
+`PARAMETERS: f - the name of a morphism`,
+`            y - a polynomial (class on the target of f)`,
+`   `,
+`SYNOPSIS:   `,
+`- lowerstar(f,y) computes the pushforward of y via f.  f &-* y (note`,
+`  infix notation) is identical.`,
+`- If f is a bundle morphism, then lowerstar looks up the table f[lowerstar_]`,
+`  which was created when forming the bundle via Grass or Proj.`,
+`- Otherwise, duality is used to infer the result from the pullback map using`,
+`  an additive basis for the target of f.   additivebasis is called if`,
+`  necessary.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> proj(1,g): proj(1,h): productvariety(P1xP1,Pg,Ph,p1,p2):`,
+`> lowerstar(p1,(g+h)^2);`,
+`   `,
+`                                      2 g`,
+`   `,
+`> proj(4,h,all): Proj(X,Ph[tangentbundle_],z): X&-*((z+h)^4);`,
+`   `,
+`                                      9 h`,
+`  `,
+`SEE ALSO:  morphism, additivebasis, Grass, Proj, Symm`  ,
+`   `     
+):
+
+`help/text/&-*` := TEXT(
+`FUNCTION: lowerstar - pushforward by a morphism`,
+`   `,
+`CALLING SEQUENCES: lowerstar(f,y)`,
+`                   f &-* y `,
+`   `,
+`PARAMETERS: f - the name of a morphism`,
+`            y - a polynomial (class on the target of f)`,
+`   `,
+`SYNOPSIS:   `,
+`- lowerstar(f,y) computes the pushforward of y via f.  f &-* y (note `,
+`  infix notation) is identical.`,
+`- If f is a bundle morphism, then lowerstar looks up the table f[lowerstar_]`,
+`  which was created when forming the bundle via Grass or Proj.`,
+`- Otherwise, duality is used to infer the result from the pullback map using`,
+`  an additive basis for the target of f.   additivebasis is called if`,
+`  necessary.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> proj(1,g): proj(1,h): productvariety(P1xP1,Pg,Ph,p1,p2):`,
+`> lowerstar(p1,(g+h)^2);`,
+`   `,
+`                                      2 g`,
+`   `,
+`> proj(4,h,all): Proj(X,Ph[tangentbundle_],z): X&-*((z+h)^4);`,
+`   `,
+`                                      9 h`,
+`  `,
+`SEE ALSO:  morphism, additivebasis, Grass, Proj, Symm`  ,
+`   `     
+):
+
+`help/text/lowershriek` := TEXT(
+`FUNCTION: lowershriek - pushforward in Grothendieck-Riemann-Roch`,
+`   `,
+`CALLING SEQUENCES: lowershriek(f,A)`,
+`                   f &-! A `,
+`   `,
+`PARAMETERS: f - the name of a morphism`,
+`            A - (the Chern character of) a sheaf`,
+`   `,
+`SYNOPSIS:   `,
+`- lowershriek(f,A) computes f lowershriek of A.  f &-! A (note infix`,
+`  notation) is identical.`,
+`- The relative Todd class of f is needed.  It is computed and stored in`,
+`  f[toddclass_] if necessary.  There must be sufficient information with`,
+`  which to compute the relative Todd class.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> proj(1,g,all): proj(1,h,all): productvariety(P1xP1,Pg,Ph,p1,p2):`,
+`> lowershriek(p1,o(n*h));`,
+`   `,
+`                                     1 + n`,
+`   `,
+`> p1&-!(o(n*g));`,
+`   `,
+`                                   1 + n g t`,
+`  `,
+`SEE ALSO:  morphism, lowerstar, Grass, Proj, toddclass, chi`  ,
+`   `     
+):
+
+`help/text/&-!` := TEXT(
+`FUNCTION: lowershriek - pushforward in Grothendieck-Riemann-Roch`,
+`   `,
+`CALLING SEQUENCES: lowershriek(f,A)`,
+`                   f &-! A `,
+`   `,
+`PARAMETERS: f - the name of a morphism`,
+`            A - (the Chern character of) a sheaf`,
+`   `,
+`SYNOPSIS:   `,
+`- lowershriek(f,A) computes f lowershriek of A.  f &-! A (note infix`,
+`  notation) is identical.`,
+`- The relative Todd class of f is needed.  It is computed and stored in`,
+`  f[toddclass_] if necessary.  There must be sufficient information with`,
+`  which to compute the relative Todd class.`,
+`- lowerstar is called, which works differently in the case where f is a`,
+`  bundle morphism.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> proj(1,g,all): proj(1,h,all): productvariety(P1xP1,Pg,Ph,p1,p2):`,
+`> lowershriek(p1,o(n*h));`,
+`   `,
+`                                     1 + n`,
+`   `,
+`> p1&-!(o(n*g));`,
+`   `,
+`                                   1 + n g t`,
+`  `,
+`SEE ALSO:  morphism, lowerstar, Grass, Proj, toddclass, chi`  ,
+`   `     
+):
+
+`help/text/curve` := TEXT(
+`FUNCTION: curve - create a curve`,
+`   `,
+`CALLING SEQUENCE: curve(C,g,p) `,
+`   `,
+`PARAMETERS: C - the name of a curve (variety object)`,
+`            g - an integer or a name`,
+`            p - a name`,
+`   `,
+`SYNOPSIS:   `,
+`- curve(C,g,p) creates a curve by making C a variety object.  g is the genus,`,
+`  and p is the name of the class of a point on the curve.`,
+`- The tangentbundle, toddclass, and additive basis are automatically computed.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> curve(C,g,p): chi(o(d*p));`,
+`   `,
+`                                   d + 1 - g`,
+`   `,
+`  `,
+`SEE ALSO:  variety, toddclass, additivebasis`  ,
+`   `     
+):
+
+`help/text/POINT` := TEXT(
+`FUNCTION: POINT - a point`,
+`   `,
+`CALLING SEQUENCES: POINT `,
+`   `,
+`PARAMETERS: none`,
+`   `,
+`SYNOPSIS:   `,
+`- POINT is a table which gives the variety object corresponding to a point.`,
+`   `,
+`EXAMPLES:   `,
+`   `,
+`> Grass(X,2,4,c): integral(X,c1^4);`,
+`   `,
+`Error, (in additivebasis) Usage: additivebasis(variety)`,
+`   `,
+`> totalspace(X,POINT): integral(TX,c1^4);`,
+`   `,
+`                                       2`,
+`   `,
+`SEE ALSO:  variety, totalspace`  ,
+`   `     
+):
+
+`help/text/grass` := TEXT(
+`FUNCTION: grass - construct a Grassmann variety`,
+`   `,
+`CALLING SEQUENCES:`,
+`   grass(k,r,c)`,
+`   grass(k,r,c,all)`,
+`   grass(k,r,c,tangentbundle)`,
+`   grass(k,r,c,basis)`,
+`   `,   
+`PARAMETERS:  k, r - positive integers`,
+`                c - a name`,
+`   `,      
+`SYNOPSIS:`,   
+`- A variety object cat('G',c) is constructed, the Grassmann variety of rank-k`,
+`  quotients of an r-dimensional vector space. The universal rank-k `,
+`  quotient bundle on cat('G',c) is called cat('Q',c), and its chern classes are`,
+`  c1, c2, ..., cat('c',k). The relations are the high segre classes of cat('Q',c),`,
+`  segre(i,cat('Q',c)) for i=r-k+1..r, and these are also computed.  monomialvalues`,
+`  is called.`,
+`- The fourth argument determines how much else will be computed.`,
+`  tangentbundle will compute the tangentbundle and todd class`,
+`  basis will call additivebasis(Gc)`,
+`  all will do all the above`,
+`- Only the first three letters in the fourth argument are significant.`,
+`   `,  
+`EXAMPLES:  `, 
+`> grass(2,7,c);`,
+`   `,
+`                        currentvariety_ is Gc, DIM is 10`,
+`   `,
+`> integral(c1^10);`,
+`   `,
+`                                       42`,
+`   `,   
+`SEE ALSO:  variety, proj, Grass, schur`,
+`   `
+):
+
+`help/text/proj` := TEXT(
+`FUNCTION: proj - construct projective space`,
+`   `,  
+`CALLING SEQUENCES:`,
+`   proj(n,h)`,
+`   proj(n,h,option)`,
+`   `,   
+`PARAMETERS: n - a non-negative integer`,
+`            h - a name`,
+`            option - one of tan, bas, or all`,
+`   `,      
+`SYNOPSIS: `,  
+` - A variety object cat('P',h) is constructed, projective n-dimensional space.`,
+`   The hyperplane class will be called h. monomialvalues is called.`,
+` - tan results in the computation of the tangent bundle and Todd class.`,
+` - bas results in the computation of additive bases.`,
+` - all results in all of the above being computed.`,
+`   `,  
+`EXAMPLES:  `, 
+`> proj(2,g,all);`,
+`   `,
+`                        currentvariety_ is Pg, DIM is 2`,
+`   `,
+`> chern(2,Pg[tangentbundle_]);`,
+`   `,
+`                                         2`,
+`                                      3 g`,
+`   `,   
+`SEE ALSO:  variety, Proj`,
+`   `
+):
+
+`help/text/toricvariety` := TEXT(
+`FUNCTION: toricvariety - construct a toric variety`,
+`   `,
+`CALLING SEQUENCES:`,
+` toricvariety(X,x,edges,<A1,A2,A3,A4,A5,A6>)`,
+`   `,
+`PARAMETERS: X - a name`,
+`            x - a name or a list of names`,
+`            edges - a integer valued matrix or list of lists`,
+`            A1,A2,A3,A4,A5,A6 are options, each one of the following types`,
+`   `,
+`            amp=list  an ample Weil divisor given in terms of a vector of`,
+`                      coefficients of the basic divisors corresponding to `,
+`                      edges`,
+`            sri=list  a list of equations of the Stanley-Reisner ideal`,
+`            con=list  a list of lists, each of which contains the generators`,
+`                      of the cones in the fan.`,
+`            Pic=list  a list of linearly independent elements in `,
+`                      for the group of Q-divisors, in the form`,
+`                      [name1=cat('x',i),name2=cat('x',j),...], where name1,name2,..`,
+`                      are user-specified names and cat('x',i),... are the variables`,
+`                      associated to the generators.`,
+`            opt       if present, its first three characters should be`,
+`                      'int', 'bas', 'tan', or 'all'.`,
+`   `,
+`            For each of the first four types, the full argument may be`,
+`            shortened to only the right hand side of the equation. `,
+`            At least one of the amp, sri, or con arguments is needed.`,
+`            Other than that, any number can be specified, and`,
+`            in any order.`,
+`   `,
+`SYNOPSIS:`,
+`- A variety object X is constructed, the toric variety associated to the`,
+`  given data.  The primitive generators of the edges of the fan `,
+`  (assumed to be simplicial) are given by the variable edges, either as a`,
+`  list of lists or as a matrix (one row for each edge).`,
+`  The names of the divisors corresponding to the edges will be`,
+`  automatically constructed from the name x as cat('x',1),cat('x',2),...`,
+`  or else given explicitly if x is a list of names.`,
+`- A list of cones in the fan is stored in X[cones_] as a list of lists`,
+`  each list consisting of integers associated to the edges of a cone.`,
+`- The Stanley Reisner ideal is stored as a list of monomials in`,
+`  X[StanleyReisner_]`,
+`- The generators for the Picard group will be chosen automatically unless`,
+`  the user specifies the generators using the Pic option.  In any case,`,
+`  the divisors corresponding to the edges are expressed in terms of the`,
+`  relevant basis for the Picard group, and are stored in the list`,
+`  X[edgevalues_].`,
+`- tan results in the computation of the tangent bundle and Todd class.`,
+`- bas results in the computation of additive bases for the int. ring.`,
+`- int results in the computation of the intersection ring.`,
+`- all results in all of the above being computed.`,
+`   `,
+`EXAMPLES:`,
+`> toricvariety(P1xP1,x,[[1,0],[0,1],[-1,0],[0,-1]],amp=[1,1,0,0], `,
+`> Pic=[h1=x1,h2=x2],all);`,
+`   `,
+`                       currentvariety_ is P1xP1, DIM is 2`,
+`   `,
+`> P1xP1[edgevalues_];`,
+`   `,
+`                                [h1, h2, h1, h2]`,
+`   `,
+`> P1xP1[cones_];`,
+`   `,
+`                        [[1, 2], [1, 4], [2, 3], [3, 4]]`,
+`   `,
+`>  toricvariety(P1xP1,x,[[1,0],[0,1],[-1,0],[0,-1]],`,
+`> con=[[1,2],[2,3],[3,4],[4,1]],all);`,
+`   `,
+`                       currentvariety_ is P1xP1, DIM is 2`,
+`   `,
+`> P1xP1[edgevalues_];`,
+`   `,
+`                                [x3, x4, x3, x4]`,
+`   `,
+`> P1xP1[StanleyReisner_];`,
+`   `,
+`                                 [x1 x3, x2 x4]`,
+`   `,
+`> toricvariety(P1xP1,x,[[1,0],[0,1],[-1,0],[0,-1]],`,
+`> sri=[x1*x3,x2*x4]);`,
+`   `,
+`                       currentvariety_ is P1xP1, DIM is 2`,
+`   `,
+`SEE ALSO:  variety, monomialvalues, additivebasis, wproj, whichcone`,
+`           insertedge`,
+`   `
+):
+
+
+`help/text/wproj` := TEXT(
+`FUNCTION: wproj - construct a weighted projective space as a toric variety`,
+`   `,
+`CALLING SEQUENCES:`,
+`   wproj(X,h,w)`,
+`   wproj(X,h,w,options)`,
+`   `,   
+`PARAMETERS:  X,h - names`,
+`             w - an integer list`,
+`             options - any of the options used to create a toricvariety:`,
+`                       Pic,int,bas,tan, or all`,
+`   `,      
+`SYNOPSIS:`,   
+`- The weighted projective space P(w) is constructed as a toric variety,`,
+`  and is stored as X.  h is used to generated names for the edges.`,
+`- The option Pic allows the user to specific a generator for Pic,`,
+`  exactly as in the toricvariety procedure`,
+`- The options int, bas, tan or all control the computation of the `,
+`  intersection numbers, additive basis, and tangentbundle, exactly`,
+`  as in the toricvariety procedure.`,
+`   `,  
+`EXAMPLES:  `, 
+`> wproj(X,h,[1,1,2],Pic=[H=h1],int): integral2(H^2);`,
+`   `,
+`                              Variety is singular`,
+`   `,
+`                                      1/2`,
+`   `,
+`SEE ALSO:  toricvariety, whichcone, insertedge`,
+`   `
+):
+
+`help/text/whichcone` := TEXT(
+`FUNCTION: whichcone - determines the smallest cone of a fan that a given`,
+`                      vector is contained in`,
+`   `,
+`CALLING SEQUENCE: whichcone(X,v)`,
+`   `,   
+`PARAMETERS:  X - the name of a toricvariety`,
+`             v - an integer list`,
+`   `,      
+`SYNOPSIS:`,   
+`- returns the smallest cone of the fan for X that v is contained in.  The`,
+`  cone is described by a list of integers which correspond to the edges`,
+`  spanning the cone.`,
+`   `,  
+`EXAMPLES:  `, 
+`> wproj(X,x,[1,1,1,1]): print(X[edges_]): whichcone(X,[0,1,1]);`,
+`   `,
+`                                 [  1   1   1 ]`,
+`                                 [            ]`,
+`                                 [ -1   0   0 ]`,
+`                                 [            ]`,
+`                                 [  0  -1   0 ]`,
+`                                 [            ]`,
+`                                 [  0   0  -1 ]`,
+`   `,
+`                                     [1, 2]`,
+`   `,
+`SEE ALSO:  toricvariety, wproj, insertedge`,
+`   `
+):
+
+`help/text/insertedge` := TEXT(
+`FUNCTION: insertedge - inserts an edge into the fan of a toric variety`,
+`   `,
+`CALLING SEQUENCE: insertedge(Y,X,x,v)`,
+`                  insertedge(Y,X,x,v,options)`,
+`   `,   
+`PARAMETERS:  Y,X,x - names`,
+`             v - an integer list`,
+`             options - any of the options used to create a toricvariety:`,
+`                       Pic,int,bas,tan, or all`,
+`   `,      
+`SYNOPSIS:`,   
+`- insertedge(Y,X,x,v) creates a toric variety Y from an existing toric`,
+`  variety X by inserting the edge v.  The new edge will be named x.`,
+`- The set of cones, the Stanley-Reisner ideal, and the generators for the`,
+`  Picard group are updated.`,
+`- The options int, bas, tan or all control the computation of the `,
+`  intersection numbers, additive basis, and tangentbundle, exactly`,
+`  as in the toricvariety procedure.`,
+`   `,  
+`EXAMPLES:  `, 
+`> wproj(X,x,[1,1,2,2,2]): print(X[edges_]);`,
+`   `,
+`                              Variety is singular`,
+`   `,
+`                               [  1   2   2   2 ]`,
+`                               [                ]`,
+`                               [ -1   0   0   0 ]`,
+`                               [                ]`,
+`                               [  0  -1   0   0 ]`,
+`                               [                ]`,
+`                               [  0   0  -1   0 ]`,
+`                               [                ]`,
+`                               [  0   0   0  -1 ]`,
+`   `,
+`> insertedge(Y,X,x6,[0,1,1,1]): Y[smooth_];`,
+`   `,
+`                                      true`,
+`   `,
+`SEE ALSO:  toricvariety, whichcone, wproj, additivebasis, monomialvalues`,
+`   `
+):
+
+`help/text/Grass` := TEXT(
+`FUNCTION: Grass - construct a Grassmann bundle`,
+`   `,
+`CALLING SEQUENCES:`,
+`   Grass(f,k,A,c)`,
+`   Grass(f,k,A,c,option)`,
+`   `,   
+`PARAMETERS:  f,c - names`,
+`             k - a non-negative integer`,
+`             A - (the Chern character of) a sheaf`,
+`             option - tan or all`,
+`   `,      
+`SYNOPSIS:`,   
+`- A bundle object f is constructed, the Grassmann bundle of rank-k`,
+`  quotients of the sheaf A, which is represented by its Chern character. `,
+`  The universal rank-k quotient bundle on is called cat('Q',c), and is also stored`,
+`  as f[quotientbundle_].  Its Chern classes are c1, c2, ..., cat('c',k).`,
+`- A table f[lowerstar_] is created which gives the pushforward of classes in`,
+`  the totalspace of the bundle (for any base space).`,
+`- Other trivial data attached to k and A are stored in the table for f.`,
+`  If tan or all are given, the relative tangent bundle and Todd`,
+`  class is computed.`,
+`  X is not a variety object.  totalspace must be called to create the variety`,
+`  object cat('T',f)`,
+`   `,  
+`EXAMPLES:  `, 
+`> proj(4,h,all): Grass(f,2,Ph[tangentbundle_],c): f[dimension_];`,
+`   `,
+`                                       4`,
+`   `,
+`> DIM;`,
+`   `,
+`                                       8`,
+`   `, 
+`SEE ALSO:  grass, lowerstar, totalspace, Proj`,
+`   `
+):
+
+`help/text/Proj` := TEXT(
+`FUNCTION: Proj - construct a projective bundle`,
+`   `,
+`CALLING SEQUENCES:`,
+`   Proj(f,A,c)`,
+`   Proj(f,A,c,option)`,
+`   `,   
+`PARAMETERS:  f,c - names`,
+`             A - (the Chern character of) a sheaf`,
+`             option - tan or all`,
+`   `,      
+`SYNOPSIS:`,   
+`- A bundle object f is constructed, the projective bundle of rank 1`,
+`  quotients of the sheaf A, which is represented by its Chern character. `,
+`  c is the first Chern class of the tautological quotient line bundle.`,
+`- A table f[lowerstar_] is created which gives the pushforward of classes in`,
+`  the totalspace of the bundle (for any base space).`,
+`- X, if given, is the name of the base variety.  The base is assumed to have`,
+`  dimension DIM if X is not specified.  DIM is updated to the dimension`,
+`  rank(A)-1+dimension of base = dimension of total space in any case.`,
+`  If tan or all are given, the relative tangent bundle and Todd`,
+`  class is computed.`,
+`  X is not a variety object.  totalspace must be called to create the variety`,
+`  object cat('T',f)`,
+`   `,  
+`EXAMPLES:  `, 
+`> proj(2,h,all): Proj(f,tangentbundle(Ph),c): eval(f[lowerstar_]);`,
+`   `,
+`                                 table([`,
+`                                      3      2`,
+`                                     c  = 6 h`,
+`                                     c = 1`,
+`                                      2`,
+`                                     c  = 3 h`,
+`                                 ])`,
+`   `,
+`SEE ALSO:  grass, lowerstar, totalspace, Grass`,
+`   `
+):
+
+`help/text/up` := TEXT(
+`FUNCTION: up - make the total space of a bundle current`,
+`   `,
+`CALLING SEQUENCE: up(f)`,
+`   `,   
+`PARAMETERS:  f - the name of a bundle`,
+`   `,      
+`SYNOPSIS:`,   
+`- up(f) causes the total space f[source_] of the bundle f to become the `,
+`  currentvariety.  DIM is set to the dimension of f[source_].  DIM is updated`,
+`  if f[basedimension_] has been assigned, even if f[source_] has not been`,
+`  assigned.`,
+`- up may also be used more generally to make the source of a morphism current.`,
+`   `,  
+`EXAMPLES:  `, 
+`> proj(2,h): Proj(f,1+o(h),c): totalspace(f,Ph): setvariety(Ph): up(f): where();`,
+`   `,
+`                        currentvariety_ is Tf, DIM is 3`,
+`   `,
+`SEE ALSO:  down, Grass, Proj`,
+`   `
+):
+
+`help/text/down` := TEXT(
+`FUNCTION: down - make the base space of a bundle current`,
+`   `,
+`CALLING SEQUENCE: down(f)`,
+`   `,   
+`PARAMETERS:  f - the name of a bundle`,
+`   `,      
+`SYNOPSIS:`,   
+`- down(f) causes the base space f[target_] of the bundle f to become the `,
+`  currentvariety.  DIM is set to the dimension of f[target_], even if `,
+`  f[basedimension_] is assigned but not f[target_].`,
+`- down may also be used more generally to make the target of a morphism`,
+`  current.`,
+`   `,  
+`EXAMPLES:  `, 
+`> proj(2,h): Proj(f,1+o(h),c): totalspace(f,Ph): down(f): where();`,
+`   `,
+`                        currentvariety_ is Ph, DIM is 2`,
+`   `,
+`SEE ALSO:  up, Grass, Proj`,
+`   `
+):
+
+`help/text/totalspace` := TEXT(
+`FUNCTION: totalspace - create the total space of a bundle`,
+`   `,
+`CALLING SEQUENCE: totalspace(f,X,option)`,
+`    `,
+`PARAMETERS: f - the name of a bundle`,
+`            X - the name of a variety`,
+`            option - tan or bas or all`,
+`   `,
+`SYNOPSIS:`,
+`- totalspace(f,X) creates the variety object cat('T',f), the totalspace of`,
+`  the bundle f with base space X.  cat('T',f) is made the currentvariety, `,
+`  and DIM is set to the dimension of cat('T',f).  integral works on cat('T',f) if`,
+`  it works on X.`,
+`- tan results in the calculation of the tangent bundle and Todd class`,
+`  of cat('T',f).`,
+`- bas results in the calculation of an additive basis for cat('T',f).  X must`,
+`  have its additive basis and dual basis assigned.  totalspace`,
+`  uses this to construct cat('T',f)[basis_] and cat('T',f)[dualbasis_].`,
+`- all does all of the above.`,
+`    `,
+`EXAMPLES: `,
+`> grass(2,4,c): Proj(X,Qc,z): totalspace(X,Gc): integral(z^5);`,
+`    `,
+`                                     0`,
+`   `,
+`SEE ALSO: Grass, Proj, additivebasis`,
+`   `
+):
+
+`help/text/blowup` := TEXT(
+`FUNCTION: blowup - create a blowup`,
+`   `,
+`CALLING SEQUENCE: blowup(i)`,
+`   `,
+`PARAMETERS:   i - the name of an inclusion morphism`,
+`   `,
+`SYNOPSIS: `,
+`- blowup(i) creates the variety cat('B',i), the blowup of i[target_] along`,
+`  i[source_].  The table cat('B',i)[monomialvalues_] of values of monomials`,
+`  on cat('B',i) is created.`,
+`- The exceptional divisor is called cat('E',i).  cat('p',i) is made the structure `,
+`  morphism from cat('B',i) to X.`,
+`- blowup(i) requires the tangent bundles of i[source_] and i[target_]`,
+`  (Warning - no error message is given if these are not supplied),`,
+`  the monomialvalues_ table for i[target_], and sufficient data to `,
+`  compute integrals on i[source_] (or these can be left unevaluated).`,
+`- cat('B',i) is made the currentvariety, and DIM is updated accordingly.`,
+`   `,
+`EXAMPLES: `,
+`> proj(2,h,all): proj(5,H,all): morphism(f,Ph,PH,[2*h]):`,
+`> blowup(f): integral((2*H-Ef)^5); #quadrics through Veronese give`,
+`>                                  #a Cremona transformation.`,
+`   `,
+`                                       1`,
+`   `,
+`SEE ALSO: morphism, monomialvalues, blowuppoints`,
+`   `
+):
+
+`help/text/blowuppoints` := TEXT(
+`FUNCTION: blowuppoints - create a blowup of a variety along a set of points`,
+`   `,
+`CALLING SEQUENCE: blowuppoints(X,k,e)`,
+`   `,
+`PARAMETERS:   X - the name of a variety`,
+`              k - a positive integer`,
+`              e - a name`,
+`   `,
+`SYNOPSIS: `,
+`- blowuppoints(X,k,e) creates the variety cat('B',e), the blowup of X along k points.`,
+`  The exceptional divisors are  called e1,e2,...,cat('e',k).`,
+`- cat('B',e) is made the currentvariety, and DIM is updated accordingly.`,
+`- A table of non-zero monomialvalues of cat('B',e) is constructed.`,
+`- If relations are supplied for X, relations are calculated for cat('B',e).`,
+`   `,
+`EXAMPLES: `,
+`> proj(2,h): blowuppoints(Ph,2,e): integral((2*h-e1-e2)^2);`,
+`   `,
+`                                       2`,
+`   `,
+`SEE ALSO: blowup`,
+`   `
+):
+
+`help/text/bundlesection` := TEXT(
+`FUNCTION: bundlesection - create the zero variety of a bundle section`,
+`   `,
+`CALLING SEQUENCE: bundlesection(Z,F)`,
+`   `,
+`PARAMETERS:  Z - a name`,
+`             F - (the Chern character of) a vector bundle`,
+`   `,
+`SYNOPSIS: `,
+`- The variety object Z is created corresponding to the zero locus of`,
+`  a sufficiently general section of F.  The tangent bundle of Z and the`,
+`  monomialvalues_ table of Z are constructed.`,
+`- The base space of F must be the currentvariety_ when bundlesection`,
+`  is called.  The morphism object cat('i',Z) is created to represent the `,
+`  inclusion of Z in the ambient variety.`,
+`- Only classes on Z induced from the ambient space are considered.`,
+`   `,
+`EXAMPLES: `,
+`> proj(3,h): b:=o(4*h): bundlesection(Z,b): up(iZ): integral(h^2);`,
+`   `,
+`                                       4`,
+`   `,
+`SEE ALSO: monomialvalues, morphism`,
+`   `
+):
+
+`help/text/productvariety` := TEXT(
+`FUNCTION: productvariety - create the product of two varieties`,
+`   `,
+`CALLING SEQUENCES:  productvariety(W,X,Y)`,
+`                    productvariety(W,X,Y,pr1,pr2)`,
+`   `,
+`PARAMETERS:   W,pr1,pr2 - names`,
+`              X,Y - names of varieties`,
+`   `,
+`SYNOPSIS: `,
+`- The variety object W is created corresponding to the product of X and Y.`,
+`- If X[monomialvalues_] and Y[monomialvalues_] are known, then `,
+`  W[monomialvalues_] is calculated.  Similarly for the table entries point_,`,
+`  tangentbundle_, basis_, and dualbasis_.`,
+`- The presence of the last two arguments causes the morphism objects pr1 and `,
+`  pr2 to be created, corresponding to the projections onto X and Y, `,
+`  respectively.`,
+`   `,
+`EXAMPLES: `,
+`> proj(2,h): grass(2,4,c): productvariety(X,Ph,Gc):`,
+`> integral((h+c1)^6);`,
+`   `,
+`                                       30`,
+`   `,
+`SEE ALSO: variety, morphism`,
+`   `
+):
+
+`help/text/grobnerbasis` := TEXT(
+`FUNCTION: grobnerbasis - compute a grobner basis for the relations`,
+`   `,   
+`CALLING SEQUENCES:`,
+`       grobnerbasis(X)`,
+`       grobnerbasis(X,order)`,
+`   `,   
+`PARAMETERS:`,
+`   X - the name of a variety`,
+`   order - 'plex' or 'tdeg' `,
+`   `,      
+`SYNOPSIS:`,   
+`- A Grobner basis for the ideal of relations of X is computed and stored`,
+`  in X[grelations_]. If 'plex' or 'tdeg' is specified, pure lexicographic`,
+`  resp. total degree refined by reverse lex is used. If order is not`,
+`  specified, 'tdeg' is used.`,
+`   `,   
+`EXAMPLES:  `, 
+`> variety(X,dim=2,var=[e,H], rel=[e*H,e^2+H^2],deg=[1,1],poi=H^2):`,
+`> grobnerbasis(X,'tdeg');`,
+`   `,
+`              grobner basis computed with 3 elements`,
+`   `,   
+`SEE ALSO:  normalform, integral2`,
+`   `
+):
+
+`help/text/normalform` := TEXT(
+`FUNCTION: normalform - normal form with respect to a grobner basis`,
+`   `,   
+`CALLING SEQUENCE:`,
+`   normalform(c)`,
+`   normalform(X,c)`,
+`   `,   
+`PARAMETERS:`,
+`   X - the name of a variety`,
+`   c - an expression (cycle class or polynomial in t)`,
+`   `,      
+`SYNOPSIS:  `, 
+`- The expression c is reduced to its normal form modulo the list`,
+`  X[grelations_] (presumably a grobner basis). If X is not given,`,
+`  currentvariety_ is used. (This can be exploited for a subset of `,
+`  the relations, if X[grelations_] is assigned manually.)`,
+`   `,   
+`EXAMPLES: `,
+`> variety(X,dim=2,var=[e,H], rel=[e*H,e^2+H^2],deg=[1,1],point=H^2):`,
+`> grobnerbasis(X): normalform((H+2*e)^2);`,
+`   `,
+`                                          2`,
+`                                     - 3 H`,
+`   `,   
+`SEE ALSO:  variety, grobnerbasis`,
+`   `
+):
+
+`help/text/integral2` := TEXT(
+`FUNCTION: integral2 - compute integral (degree of zero-cycle)`,
+`   `,   
+`CALLING SEQUENCE:`,
+`   integral2(X,c)`,
+`   integral2(c)`,
+`   `,   
+`PARAMETERS:`,
+`   X - the name of a variety`,
+`   c - a zero-cycle (class of top degree on X)`,
+`   `,      
+`SYNOPSIS:  `, 
+`- Computes the integral using the normalform/grobnerbasis approach.`,
+`  Hence an alternative to integral, which works without using any`,
+`  grobner basis.  The currentvariety is used if X is not supplied.`,
+`   `,   
+`EXAMPLES:   `,
+`> variety(X,dim=2,var=[e,H], rel=[e*H,e^2+H^2],deg=[1,1], poi=H^2):`,
+`> grobnerbasis(X): integral2((2*H-e)^2);`,
+`   `,
+`                                       3`,
+`   `,
+`SEE ALSO:  integral, normalform, grobnerbasis`,
+`   `
+):
+
+`help/text/multiplepoint` := TEXT(
+`FUNCTION: multiplepoint - compute the multiple point locus of a morphism`,
+`   `,   
+`CALLING SEQUENCE:   multiplepoint(f,k)`,
+`   `,   
+`PARAMETERS:`,
+`   f - the name of a morphism`,
+`   k - a non-negative integer`,
+`   `,      
+`SYNOPSIS:  `, 
+`- Computes the class of the k-fold point locus of the morphism f (as a class`,
+`  in f[source_]).  The normal bundle of f must be computable by the `,
+`  normalbundle procedure, as well as f^* and f-*.`,
+`  To get the class of the image of the k-fold point locus, push forward `,
+`  and divide by k! .`,
+`   `,   
+`EXAMPLES:   `,
+`> curve(C,g,p): proj(2,h,all): morphism(f,C,Ph,[d*p]):`,
+`> integral(C,multiplepoint(f,2));`,
+`   `,
+`                                2`,
+`                               d  + 2 - 2 g - 3 d`,
+`   `,
+`SEE ALSO:  normalbundle, lowerstar`,
+`   `
+):
+
+#
+# installation
+#
+
+schubertlist:=[adams, additivebasis, betti, blowup, blowuppoints, bundle, bundlesection, chern, chi, codimension, compose, curve, determinant, dimension, division, down, dual, End, grass, Grass, grobnerbasis, Hom, insertedge, integral2, integral, koszul, lowershriek, lowerstar, monomials, monomialvalues, morphism, multiplepoint, normalbundle, normalform, o, POINT, porteous2, porteous, productvariety, proj, Proj, rank, schurfunctor2, schurfunctor, schur, segre, setvariety, sheaf, strip, symm, Symm, tangentbundle, tensor, toddclass, todd, toricvariety, totalspace, twist, up, upperstar, variety, verifyduality, wedge, where, whichcone, wproj]:
+schubertinternals:=[expp, logg, rankblock, lookup, maptounitvector, unitriangularinverse, tosmatrix]:
+schubertsave:=[op(schubertlist), op(schubertinternals)]:
+
+# save procedures in .m files in the subdirectory schubert of Homelib.
+
+for x in schubertsave do
+  save cat(`schubert/`, x), cat(HomeLib,`/schubert/`, x, `.m`);
+od:
+
+for x in schubertlist do
+  schubert[`x`]:=eval(cat(`schubert/`,x)):
+od:
+
+schubert[`&@`]:=eval(`schubert/tensor`):
+schubert[`&/`]:=eval(`schubert/division`):
+schubert[`&^*`]:=eval(`schubert/upperstar`):
+schubert[`&-*`]:=eval(`schubert/lowerstar`):
+schubert[`&-!`]:=eval(`schubert/lowershriek`):
+
+# save into schubert.m in HomeLib
+save `schubert`, `DIM`, `version_`, cat(HomeLib,`/schubert.m`):
+
+# maple.hdb
+# Mathematics => Intersection Theory => Schubert 
+
+helptexts:=[op(schubertlist), `summary`]:
+
+for x in helptexts do
+  parse(cat(`print(INTERFACE_HELP(insert,topic=\`schubert,`,x ,`\`, helpfile=HomeLib, text=\`help/text/`,x,`\`))`),statement):
+  parse(cat(`print(INTERFACE_HELP(insert,topic=\`schubert,`,x ,`\`, library=HomeLib, browser=\`Mathematics/Intersection Theory/Schubert/`,x,`\`))`),statement):
+od;
+
+x:='x':
+
+print(INTERFACE_HELP(insert, topic=`schubert`, helpfile=HomeLib, text=`help/text/summary`)):
+print(INTERFACE_HELP(insert, topic=`schubert`, library=HomeLib, browser=`Mathematics/Intersection Theory/Schubert/Overview`)):
+
+print(INTERFACE_HELP(insert, topic=`schubert/&@`, helpfile=HomeLib, text=`help/text/tensor`)):
+print(INTERFACE_HELP(insert, topic=`schubert/&@`, library=HomeLib, browser=`Mathematics/Intersection Theory/Schubert/&@`)):
+print(INTERFACE_HELP(insert, topic=`schubert/&\/`, helpfile=HomeLib, text=`help/text/division`)):
+print(INTERFACE_HELP(insert, topic=`schubert/&\/`, library=HomeLib, browser=`Mathematics/Intersection Theory/Schubert/&\/`)):
+print(INTERFACE_HELP(insert, topic=`schubert/&^*`, helpfile=HomeLib, text=`help/text/upperstar`)):
+print(INTERFACE_HELP(insert, topic=`schubert/&^*`, browser=`Mathematics/Intersection Theory/Schubert/&^*`, library=HomeLib)):
+print(INTERFACE_HELP(insert, topic=`schubert/&-*`, helpfile=HomeLib, text=`help/text/lowerstar`)):
+print(INTERFACE_HELP(insert, topic=`schubert/&-*`, browser=`Mathematics/Intersection Theory/Schubert/&-*`, library=HomeLib)):
+print(INTERFACE_HELP(insert, topic=`schubert/&-!`, helpfile=HomeLib, text=`help/text/lowershriek`)):
+print(INTERFACE_HELP(insert, topic=`schubert/&-!`, browser=`Mathematics/Intersection Theory/Schubert/&-!`, library=HomeLib)):
+
+stop

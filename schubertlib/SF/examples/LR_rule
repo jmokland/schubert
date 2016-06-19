@@ -1,0 +1,89 @@
+#
+# LR_rule - implementation of the Littlewood-Richardson rule
+#
+# Calling Sequence:
+#  LR_rule(lambda,mu);
+#  LR_rule(lambda,mu,alpha);
+#  LR_rule(lambda,mu,alpha,beta);
+#
+# Parameters:
+#  lambda,mu,alpha,beta - partitions
+# 
+# With two arguments, LR_rule(lambda,mu) computes the expansion of the skew
+# Schur function indexed by lambda/mu via the Littlewood-Richardson rule.
+# This is not necessarily faster than using the built-in commands tos and
+# jt_matrix in the SF package, but is provided for the sake of comparison.
+#
+# With a third argument alpha, it computes the coefficient of s[alpha] in
+# the skew Schur function indexed by lambda/mu. This is also the scalar
+# product of s[lambda] and s[mu]*s[alpha].
+#
+# With a fourth argument beta, it computes the scalar product of the skew
+# Schur functions indexed by lambda/mu and alpha/beta.
+#
+# Reference:
+#  I. Macdonald, "Symmetric Functions and Hall polynomials", Section I.9.
+#
+# Examples:
+#  LR_rule([6,5,4,3,2,1],[4,3,3,1]);
+#  LR_rule([6,5,4,3,2,1],[4,3,3,1],[4,3,1,1,1]);
+#  LR_rule([8,6,3,2],[6,3,2],[6,6,4,3,2],[5,3,3,2]);
+
+LR_rule:=proc(lambda) local l,mu,alpha,beta,i,j,dgrm;
+  if not `LR_rule/fit`(lambda,args[2]) then RETURN(0) fi;
+  l:=nops(lambda); mu:=[op(args[2]),0$l];
+  dgrm:=[seq(seq([i,-j],j=-lambda[i]..-1-mu[i]),i=1..l)];
+  if nargs>2 then alpha:=args[3];
+    if nargs>3 then beta:=args[4] else beta:=[] fi;
+    if not `LR_rule/fit`(alpha,beta) then RETURN(0) fi;
+    l:=convert([op(lambda),op(beta)],`+`);
+    if l<>convert([op(alpha),op(mu)],`+`) then RETURN(0) fi;
+    nops(LR_fillings(dgrm,[alpha,beta]))
+  else
+    convert([seq(s[op(i[1])],i=LR_fillings(dgrm))],`+`)
+  fi
+end;
+
+# Generate all LR-fillings of the given diagram.
+# The output is a list of pairs [nu,lp], where lp is a lattice permutation,
+# and nu is its "shape". If there is a second argument [alpha,beta], then
+# the output is the list of such pairs that are compatible with the skew
+# shape alpha/beta. In the case beta=[], "compatible" means that nu=alpha.
+
+LR_fillings:=proc(dgrm) local n,x,upper,lower;
+  if dgrm=[] then
+    if nargs=1 then x:=[] else x:=args[2][2] fi;
+    RETURN([[x,[]]])
+  fi;
+  n:=nops(dgrm); x:=dgrm[n];
+  if not member([x[1],x[2]+1],dgrm,'upper') then upper:=0 fi;
+  if not member([x[1]-1,x[2]],dgrm,'lower') then lower:=0 fi;
+  if nargs=1 then
+    map(`LR/nextletter`,LR_fillings([op(1..n-1,dgrm)]),lower,upper)
+  else
+    map(`LR/nextletter`,LR_fillings([op(1..n-1,dgrm)],args[2]),
+      lower,upper,args[2][1])
+  fi;
+end:
+
+`LR/nextletter`:=proc(T) local shape,lp,lb,ub,i,nl;
+  shape:=[op(T[1]),0]; lp:=T[2]; ub:=nops(shape);
+  if nargs>3 then ub:=min(ub,nops(args[4])) fi;
+  if args[2]=0 then lb:=0 else lb:=lp[args[2]] fi;
+  if args[3]>0 then ub:=min(lp[args[3]],ub) fi;
+  if nargs<4 then
+    nl:=map(proc(x,y) if x=1 or y[x-1]>y[x] then x fi end,[$lb+1..ub],shape)
+  else
+    nl:=map(proc(x,y,z) if y[x]<z[x] and (x=1 or y[x-1]>y[x]) then x fi end,
+      [$lb+1..ub],shape,args[4])
+  fi;
+  nl:=[seq([subsop(i=shape[i]+1,shape),[op(lp),i]],i=nl)];
+  op(subs(0=NULL,nl))
+end:
+
+`LR_rule/fit`:=proc(lambda,mu) local i,l;
+  l:=nops(mu); if l>nops(lambda) then RETURN(false) fi;
+  for i to l do if mu[i]>lambda[i] then RETURN(false) fi od;
+  true
+end:
+

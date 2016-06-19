@@ -1,0 +1,21 @@
+#
+# theta(f,a)   Apply the automorphism p.j -> a*p.j to f.
+# theta(f,q,t) Apply the automorphism p.j -> (1-q^j)/(1-t^j)*p.j to f.
+#
+`SF/theta`:=proc(g,q,t) local f,d,j,vars;
+  f:=SF['top'](g); d:=SF['varset'](f,'p');
+  vars:=[seq(cat('p',j),j=1..d)];
+  if nargs=2 then
+    f:=subs({seq(vars[j]=q*vars[j],j=1..d)},f)
+  elif nargs=3 then
+    f:=subs({seq(vars[j]=(1-q^j)/(1-t^j)*vars[j],j=1..d)},f)
+  else
+    ERROR(`wrong number of parameters`)
+  fi;
+  collect(f,vars,'distributed',normal);
+end:
+#
+save `SF/theta`, cat(HomeLib,`/SF/theta.m`);
+read cat(HomeLib,`/help/SF/theta`);
+quit;
+

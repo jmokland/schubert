@@ -1,0 +1,20 @@
+#
+# sf2char(f) applies the inverse characteristic map to sym fun f.
+# The result is expressed as a linear combination of characteristic
+# functions cl[mu] for partitions mu.
+# sf2char(f,b) does the same, assuming that f is in base b.
+#
+`SF/sf2char`:=proc() local f,i,d,res,cfs,term,mu;
+  f:=SF['top'](args); d:=SF['varset'](f,'p');
+  cfs:=[coeffs(f,[seq(cat('p',i),i=1..d)],'term')];
+  term:=[term]; res:=0;
+  for i to nops(cfs) do
+    mu:=`SF/shape`(term[i],'p',d);
+    res:=res+SF['zee'](mu)*cfs[i]*cl[op(mu)];
+  od; res
+end:
+#
+save `SF/sf2char`, cat(HomeLib,`/SF/sf2char.m`);
+read cat(HomeLib,`/help/SF/sf2char`);
+quit;
+

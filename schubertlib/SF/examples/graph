@@ -1,0 +1,65 @@
+#
+# graph - count unlabeled graphs via the Polya-Redfield method.
+#
+# Calling sequence:
+#  graph(n)
+#  graph(n,a)
+#
+# Parameters:
+#  n - a positive integer
+#  a - an expression
+#
+# The symmetric group S_n embeds into S_m (where m = n*(n-1)/2) via
+# permutations of the edges of the complete graph on n points.
+#
+# graph(n) computes the symmetric function corresponding to the induction of
+# the trivial character of S_n up to S_m. This amounts to the cycle index of
+# S_n acting on unordered pairs; i.e., for each partition lambda of m, the
+# coefficient of the power-sum indexed by lambda in graph(n) is (1/n!) times
+# the number of permutations in S_n whose cycle-type in S_m is lambda.
+#
+# With two arguments, graph(n,a) applies a standard plethystic substitution
+# to the cycle-index graph(n). That is, for each occurrence of the power-sum
+# p.j in graph(n), the substitution p.j -> a<j> will be applied, where a<j>
+# denotes the result obtained by substituting x -> x^j for every variable
+# name x in a. In other words, graph(n,a) is functionally equivalent to
+# (but faster than) computing evalsf(graph(n),a).
+#
+# Examples:
+#   with(SF);
+#   graph(6);
+# The edge generating function for graphs on 7 points:
+#   graph(7,1+q);
+# The number of graphs on 15 points:
+#   graph(15,2);
+# The edge generating function for (loopless) multigraphs on 5 points:
+#   f:=graph(5,1/(1-q));
+#   taylor(normal(f),q,20);
+
+graph:=proc(n) local res,new,terms,cfs,d,i,j,k,y,x;
+  if nargs>1 then
+    y:=[seq(subs({seq(x=x^j,x=indets(args[2]))},args[2]),j=1..n*n/4+1)]
+    else y:=[seq(cat('p',j),j=1..n*n/4+1)]
+  fi;
+  cfs:=[coeffs(SF['top'](cat('h',n)),[seq(cat('p',i),i=1..n)],'terms')];
+  terms:=[terms]; res:=0;
+  for i to nops(terms) do
+    new:=cfs[i];
+    d:=[seq(degree(terms[i],cat('p',j)),j=1..n)];
+    for j to n do
+      if d[j]=0 then next fi;
+      new:=new*y[j]^(j*d[j]*(d[j]-1)/2);
+      if modp(j,2)=0 then
+        new:=new*y[j]^(d[j]*(j-2)/2)*y[j/2]^d[j]
+      else
+        new:=new*y[j]^(d[j]*(j-1)/2)
+      fi;
+      for k to j-1 do
+         if d[k]>0 then new:=new*y[ilcm(k,j)]^(d[k]*d[j]*igcd(j,k)) fi
+      od
+    od;
+    res:=res+new;
+  od;
+  collect(res,indets(y),'distributed');
+end;
+

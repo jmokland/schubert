@@ -1,0 +1,10 @@
+M7R0
+I0schubert/blowupf*6#%"iG6)%"XG%"YG%"DG%"dG%"kG%"sG%"NG6"F.C4@$/9#""!-%'RETURNG
+6#%1usage:~blowup(i)G>-%$catG6$.%"BG9$-%&tableGF.>8$&F>6#%(target_G>8%&F>6#%(so
+urce_G>8&&FB6#%+dimension_G>8'&FGFN>&F9FNFL>&F96#%+variables_G7$-F:6$.%"EGF>-%#
+opG6#&FBFW>&F96#%)degrees_G7$"""-Fin6#&FBF^o@$-%)assignedG6#&FB6#%'point_G>&F9F
+joFio-%*monomialsG6#F9-%+setvarietyG6#FG>8*-%-normalbundleG6#F>>&F96#%0monomial
+values_G-%%copyG6#&FCF[q?(8(FaoFaoFL%%trueG?(8)FaoFao-%%nopsG6#&&FB6#%+monomial
+s_G6#,&FLFaoFbq!""Fcq>&Fjp6#*&)FZFbqFao&Fiq6#FeqFao*&-%)integralG6$FG*&-%&segre
+G6$,(FbqFaoFLF_rFQFaoFepFao-%*upperstarG6$F>FerFaoFao)F_r,(FLFaoFQF_rFaoFaoFao-
+%)morphismG6%-F:6$.%"pGF>F9FB-FbpF`p-%&whereGF.F.F.F.F.

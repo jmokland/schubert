@@ -1,0 +1,31 @@
+#
+# top(f)    convert the symmetric function f into a p-polynomial.
+# top(f,b)  does the same, assuming f is expressed solely in basis b.
+# The final result is collected with respect to p1,p2,p3,...
+# If b is not a predefined basis, f must be *linear* in the b[..]'s.
+#
+`SF/top`:=proc() local f,bases,sp,i,mu,b,d,a;
+  f:=args[1]; bases:=`SF/getbase`(args) minus {'p'};
+  sp:=SF['varset'](f,bases minus {'h','e'});
+  for b in bases minus {'h','e','s[]'} do
+    a:=op(0,b); if sp[a]=[] then next fi;
+    if assigned(`SF/dual`[a]) then
+      f:=`SF/dualize`(a,sp[a],f)
+    else
+      f:=`SF/added`(a,sp[a],f); bases:=bases union {'e'}
+    fi
+  od;
+  if member('s[]',bases) then
+    f:=subs({seq(s[op(mu)]=`SF/jt_det`(mu,0),mu=sp['s'])},f);
+    bases:={op(bases),'h','e'}
+  fi;
+  if member('h',bases) then f:=`SF/to_ehp`('h','p',f) fi;
+  if member('e',bases) then f:=`SF/to_ehp`('e','p',f) fi;
+  d:=SF['varset'](f,'p');
+  collect(f,[seq(cat('p',i),i=1..d)],'distributed',normal);
+end: 
+#
+save `SF/top`, cat(HomeLib,`/SF/top.m`);
+read cat(HomeLib,`/help/SF/top`);
+quit;
+

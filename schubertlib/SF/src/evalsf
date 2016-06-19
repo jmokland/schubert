@@ -1,0 +1,21 @@
+#
+# evalsf(f,a) generates a plethystic evaluation of f at a.
+# Let a<j> denote the result of substituting x=x^j and p.i=p.(i*j) for
+# each variable x and each power-sum p.i in the p-expansion of a.
+# Then evalsf(f,a) is obtained by substituting p.j=a<j> in the power
+# sum expansion of f for j=1,2,3,...
+# The output is collected and normalized.
+#
+`SF/evalsf`:=proc() local f,df,a,da,expr,j,i;
+  f:=SF['top'](args[1]); a:=SF['top'](args[2]);
+  df:=SF['varset'](f,'p'); da:=SF['varset'](a,'p');
+  expr:=indets(a) minus {seq(cat('p',i),i=1..da)};
+  expr:=subs({seq(i=i^j,i=expr),seq(cat('p',i)='cat'('p',i*j),i=1..da)},a);
+  expr:=subs({seq(cat('p',j)=eval(expr),j=1..df)},f);
+  collect(expr,[seq(cat('p',i),i=1..da*df)],'distributed',normal)
+end:
+#
+save `SF/evalsf`, cat(HomeLib,`/SF/evalsf.m`);
+read cat(HomeLib,`/help/SF/evalsf`);
+quit;
+

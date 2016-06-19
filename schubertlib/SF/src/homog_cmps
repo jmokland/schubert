@@ -1,0 +1,24 @@
+# 
+# homog_cmps(f) separates the symmetric function f into its homogeneous
+#  components and returns a list [[f1,d1],[f2,d2],...], where f1,f2, are
+#  the components and d1,d2,... are their degrees (unsorted).
+# homog_cmps(f,b) does the same, assuming f is in base b.
+#
+`SF/homog_cmps`:=proc() local t,sp,i,f,x,b,mu,bases;
+  if nargs>1 then bases:={args[2]} else bases:=`SF/Bases` fi;
+  f:=args[1]; sp:=SF['varset'](f,bases);
+  for x in bases do
+    if type(x,'indexed') then
+      b:=op(0,x);
+      f:=subs({seq(b[op(mu)]=t^convert(mu,`+`)*b[op(mu)],mu=sp[b])},f)
+    else
+      f:=subs({seq(cat(x,i)=t^i*cat(x,i),i=1..sp[x])},f)
+    fi
+  od;
+  f:=[coeffs(collect(f,t),t,'sp')];
+  zip((x,y)->[x,degree(y)],f,[sp])
+end:
+#
+save `SF/homog_cmps`, cat(HomeLib,`/SF/homog_cmps.m`);
+quit;
+

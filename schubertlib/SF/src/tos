@@ -1,0 +1,59 @@
+#
+# tos(f,<options>) converts f into a sum of Schur functions.
+# The optional arguments can be given in any order:
+# (1) an equation 'nrows=<integer>', where <integer> is a positive integer
+#     that specifies that all calculations should take place in the ring
+#     spanned by Schur functions with at most <integer> rows.
+# (2) a basis name, indicating that f is expressed in terms of that basis.
+# (3) list of partitions that support the Schur expansion of f.
+# New in 2.4: we ignore (3). The new code determines the Schur-support of
+# f dynamically so this option is pointless.
+#
+# Set infolevel[tos]:=2 in order to see information about the
+# Schur function coefficients as they are developed.
+#
+`SF/tos`:=proc() local b,c,d,j,f,den,nrows,vars,mu,res,v;
+  nrows:=`SF/getrows`(args);
+  if nrows>0 then
+    f:=SF['toe'](args); b:='e';
+    d:=min(nrows,SF['stdeg'](f,b));
+  else
+    f:=SF['toh'](args); b:='h';
+    d:=SF['stdeg'](f,b); nrows:=NULL;
+  fi;
+  vars:=[seq(cat(b,-j),j=-d..-1)];
+  res:=0; f:=`SF/tos/numer`(f,vars,'den');
+  while f<>0 do
+    c:=tcoeff(f,vars,'v');
+    mu:=`SF/shape`(v,b,d);
+    f:=f-c*expand(linalg['det'](SF['jt_matrix'](mu,[],b,nrows)));
+    f:=`SF/normal`(f,vars,v);
+    if b='e' then mu:=SF['conjugate'](mu) fi;
+    res:=normal(c/den)*s[op(mu)]+res;
+    userinfo(2,tos,c,mu,nops(f));
+  od; res
+end:
+#
+# If f is a sym poly with ratpoly coefficients, extract a least common
+# denominator for the coefficients, assign it to args[3], and
+# return the result of rescaling (and normalizing) f by this factor.
+# Similar to 'primpart', but *way* more space efficient.
+# If the coeffs are not ratpolys, do nothing (use 1 as the denominator).
+#
+`SF/tos/numer`:=proc(f,vars) local cfs,tms,den;
+  if type(f,'polynom'('rational',vars)) then
+    den:=denom(f); assign(args[3],den); den*f
+  elif type(f,'ratpoly(rational)') then
+    cfs:=[coeffs(f,vars,'tms')];
+    den:=lcm(op(map(denom,cfs))); assign(args[3],den);
+    cfs:=map((x,y)->normal(y*x),cfs,den);
+    convert(zip((x,y)->x*y,cfs,[tms]),`+`)
+  else
+    assign(args[3],1); f
+  fi
+end:
+#
+save `SF/tos`, `SF/tos/numer`, cat(HomeLib,`/SF/tos.m`);
+read cat(HomeLib,`/help/SF/tos`);
+quit;
+

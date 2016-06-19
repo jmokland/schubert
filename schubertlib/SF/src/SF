@@ -1,0 +1,33 @@
+#
+# Symmetric Functions package: SF version 2.4, unix edition.
+#
+# Calling sequence:  SF[<funcname>](<arguments>)
+#
+extern:=proc(x) x='readlib'(cat(`SF/`,x), cat(HomeLib,`/SF/`,x,`.m`)) end:
+#
+SF:=table(map(extern,
+  [Par, add_basis, char2sf, conjugate, dominate, dual_basis, evalsf,
+   hooks, itensor, jt_matrix, nextPar, omega, plethysm, scalar, sf2char,
+   skew, stdeg, subPar, theta, toe, toh, top, tos, varset, zee]
+)):
+#
+`SF/Bases`:={e,h,p,s[]}:
+#
+intern:=proc(x) local prg,loc;
+  if type(x,'list') then prg:=cat(`SF/`,x[1]); loc:=x[2]
+    else prg:=cat(`SF/`,x); loc:=x fi;
+  assign(prg='readlib'('evaln'(prg),cat(HomeLib,`/SF/`,loc,`.m`)));
+end:
+#
+map(intern,
+  [homog_cmps, to_ehp, jt_det, [getrows,tools], [getbase,tools],
+   [shape,tools], [bytes,tools], [normal,tools], added, dualize,
+   verify, [apply,verify]]
+):
+#
+save SF, `SF/Bases`, `SF/homog_cmps`, `SF/to_ehp`, `SF/jt_det`,
+  `SF/getrows`, `SF/getbase`, `SF/shape`, `SF/bytes`, `SF/normal`,
+  `SF/added`, `SF/dualize`, `SF/verify`, `SF/apply`, cat(HomeLib,`/SF.m`);
+read cat(HomeLib,`/help/SF/SF`);
+quit;
+

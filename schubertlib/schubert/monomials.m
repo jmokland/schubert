@@ -1,0 +1,12 @@
+M7R0
+I3schubert/monomialsf*6%%"XG%#a1G%#a2G6)%"nG%"gG%%genfG%%varsG%%degsG%"kG%'resu
+ltG6"F0C'@$/9#""!-%'RETURNG6#%jnusage:~monomials(X)~or~monomials(X,n)~or~monomi
+als(n,vars,degs)G@$-%%typeG6$7#9"7%%(integerG%%listGFBC*>8$9$>8'9%>8(9&>8&-%(pr
+oductG6$*$,&"""FT*&&FH6#8)FT)%"tG&FKFWFT!""Ffn/FX;FT-%%nopsG6#FH>FN-%'expandG6#
+-%(convertG6$-%'taylorG6%FNFZ,&FEFTFTFT%(polynomG>FN-%&coeffG6%FNFZFE@%-F<6$FN%
+"+G>8*7#-%#opG6#FN>Fap7#FN-F76#Fap@'-F<6$F>7$%&tableGFA>FE-%$maxG6$FI&FF6#%+dim
+ension_G-F<6$F>7#F^q>FEFcq-%&ERRORG6#%Xusage:~monomials(variety)~or~monomials(v
+ariety,integer)G@$4-%)assignedG6#&&FF6#%+monomials_G6#FEC(>FH&FF6#%+variables_G
+>FK&FF6#%)degrees_G-%)userinfoG6%"#5%&debugG%Fstarting~to~build~generating~func
+tionG>FNFO>FNF]o?(FXF5FTFE%%trueGC$>8%-Fjo6%FNFZFX@%-F<6$F]tF_p>&FdrFW7#-Fdp6#F
+]t>Fdt7#F]t@%/F4""#&Fdr6#FIFdrF0F0F0F0

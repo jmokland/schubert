@@ -1,0 +1,14 @@
+M7R0
+I-SF/add_basisf*6$%"bG%#ipG6&%"aG%"nG%%flagG%#lcG6"F,C+@%-%%typeG6$9$.%(indexed
+G>8$-%#opG6$""!F2>F6F2@$5-%'memberG6$&F6F,%)SF/BasesG-F?6$F6FB-%&ERRORG6#-%$cat
+G6%%&base~GF6%3~is~already~in~useG>8%9#>8&-F06$&9"6#FN.%*procedureG@$4FQ>FN,&FN
+"""!""Fgn@%2""#FN>8'&FU6#""$>F]oFgn-%'assignG6#7&/-%&evalnG6#FB<$FA-F8Fio/&%)SF
+/iprodG6#F69%/&%*SF/lcoeffGF_pF]o/&%*SF/nondomGF_pFQ-Fco6#/-FI6$%#toGF2f*F,6.%"
+cG%"fG%"dG%"BG%"iG%"vG%%varsG%%killG%#nrG%$resG%#muG%#nuGF,F,C,>F]o-%*substring
+G6$9!;F`o-%'lengthG6#F`r>FN-&%#SFG6#.%$toeG6#FU>8-F:>8,-%+SF/getrowsGF\s>FQ-&Fh
+r6#.%&stdegG6$FN.%"eG@%/F`sF:>F`sFQ>F`s-%$minG6$F`sFQ>8+7#-%$seqG6$/-FI6$Fjs8(F
+:/F\u;,&F`sFgnFgnFgnFQ>8*7#-Fgt6$-FI6$Fjs,$F\uFhn/F\u;,$F`sFhnFhn?(F,FgnFgnF,0F
+NF:C)>F6-%'tcoeffG6%FNFau.8)>8/-%)SF/shapeG6%FcvFjsF`s>8.-&Fhr6#.%*conjugateG6#
+Fev>F6-%'normalG6#*&F6Fgn-&Fcp6#F]o6#FjvFhn>F^s,&*&F6Fgn&F]o6#-F8FiwFgnFgnF^sFg
+n>FN,&FNFgn*&F6Fgn-%%subsG6$Fdt-%)SF/addedG6$F]oFevFgnFhn>FN-%*SF/normalG6%FNFa
+uFcvF^sF,F,F,.%%OkayGF,F,F,F,

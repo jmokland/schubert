@@ -1,0 +1,35 @@
+#
+# omega(f)       Apply the omega-automorphism to symmetric function f.
+# omega(f,b1)    The same, but assume f is expressed in terms of basis b1.
+# omega(f,b1,b2) The same, but convert the output to basis b2.
+#
+# With no output basis specified, the result may involve any convenient
+# mix of functions from various bases.
+#
+`SF/omega`:=proc() local f,sp,j,b,a,b0,mu,b1,bases;
+  f:=args[1]; b0:={'p','h','e','s[]'}; bases:=`SF/Bases`;
+  if nargs>1 then b1:=`SF/verify`(args[2]); bases:={b1} fi;
+  bases:=bases minus b0;
+  sp:=SF['varset'](f,bases);
+  for b in bases do
+    a:=op(0,b); if sp[a]=[] then next fi;
+    if assigned(`SF/dual`[a]) then
+      f:=`SF/dualize`(a,sp[a],f); b1:='p'
+    else
+      f:=`SF/added`(a,sp[a],f); b1:='e'
+    fi;
+    if nargs>1 then f:=`SF/apply`(b1,f,b1) fi;
+  od;
+  b1:=subs({'e'='h','h'='e'},b1);
+  sp:=SF['varset'](f,b0);
+  f:=subs({seq(cat('e',j)=cat('h',j),j=1..sp['e']),
+    seq(cat('h',j)=cat('e',j),j=1..sp['h']),
+    seq(cat('p',j)=(-1)^(j-1)*cat('p',j),j=1..sp['p']),
+    seq(s[op(mu)]=s[op(SF['conjugate'](mu))],mu=sp['s'])},f);
+  if nargs>2 then `SF/apply`(args[3],f,b1) else f fi;
+end:
+#
+save `SF/omega`, cat(HomeLib,`/SF/omega.m`);
+read cat(HomeLib,`/help/SF/omega`);
+quit;
+

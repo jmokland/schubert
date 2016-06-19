@@ -1,0 +1,35 @@
+#
+# dominate(mu)    list all partitions <= mu in dominance order
+# dominate(mu,n)  does the same but only for partitions with <= n rows
+# dominate(mu,nu) returns true iff mu >= nu in dominance order
+#
+`SF/dominate`:=proc(mu) local n,nu,res,sat,i,j,m,nu0,lam;
+  n:=convert(mu,`+`);
+  if nargs>1 then
+    if type(args[2],'list') then
+      nu:=zip((x,y)->x-y,mu,args[2],0); m:=0;
+      for i in nu do m:=m+i; if m<0 then RETURN(false) fi od;
+      RETURN(true)
+    else n:=min(n,args[2]) fi
+  fi;
+  if n<nops(mu) then res:=[] else res:=[mu] fi;
+  for sat while sat<=nops(res) do
+    nu:=res[sat]; m:=nops(nu); nu0:=[op(nu),0];
+    for i to m do 
+      if nu0[i]=nu0[i+1] then next
+        elif nu0[i]>nu0[i+1]+1 then j:=i+1
+        else for j from i+2 to m while nu0[j-1]=nu0[j] do od;
+      fi;
+      if j>min(n,m+1) then next
+        elif j<=m then lam:=subsop(i=nu[i]-1,j=nu[j]+1,nu)
+        else lam:=[op(subsop(i=nu[i]-1,nu)),1]
+      fi;
+      if not member(lam,res) then res:=[op(res),lam] fi;
+    od
+  od; res
+end:
+#
+save `SF/dominate`, cat(HomeLib,`/SF/dominate.m`);
+read cat(HomeLib,`/help/SF/dominate`);
+quit;
+

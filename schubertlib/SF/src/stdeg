@@ -1,0 +1,21 @@
+#
+# stdeg(f)   determine the degree of f w.r.t. the standard grading.
+# stdeg(f,b) do the same, but assume f is in base b.
+#
+`SF/stdeg`:=proc() local f,bases,b,B,i,sp,t;
+  if nargs>1 then bases:={args[2]} else bases:=`SF/Bases` fi;
+  f:=args[1]; sp:=SF['varset'](f,bases);
+  for b in bases do
+    if type(b,'indexed') then B:=op(0,b);
+      f:=subs({seq(B[op(i)]=t^convert(i,`+`)*B[op(i)],i=sp[B])},f)
+    else
+      f:=subs({seq(cat(b,i)=t^i*cat(b,i),i=1..sp[b])},f)
+    fi
+  od;
+  degree(f,t)
+end:
+#
+save `SF/stdeg`, cat(HomeLib,`/SF/stdeg.m`);
+read cat(HomeLib,`/help/SF/stdeg`);
+quit;
+

@@ -1,0 +1,55 @@
+#
+# Assume that b1 and b2 are (distinct) members of {e,h,p}.
+# to_ehp(b1,b2,f) takes all occurrences of the variables b1.i,i=1,2,... in
+#  f and substitutes equivalent expressions in the variables b2.i,i=1,2,...
+# Redesigned for v2.4: we now use convolution identities. Seems to be
+#  faster and more space-efficient for high degrees.
+# Also, it is *way* faster and slightly more space efficient to expand
+#  one variable at a time when the ground field is Q, but better to
+#  collect the whole at once over a rational function field.
+#
+`SF/to_ehp`:=proc(b1,b2) local i,f,d,g,sp,vars;
+  f:=args[3]; d:=SF['varset'](f,{b1,b2});
+  if d[b1]=0 then RETURN(f) fi;
+  g:=`SF/to_ehp/subs`(b1,b2,d[b1],args[4..nargs]);
+  sp:=[seq(cat(b1,i),i=1..d[b1])];
+  vars:=[op(sp),seq(cat(b2,i),i=1..d[b2])];
+  if type(f,'polynom'('rational',vars)) then
+    vars:=indets(f) intersect {op(sp)};
+    for i to d[b1] do
+      if member(sp[i],vars) then f:=expand(subs(sp[i]=g[i],f)) fi
+    od; f
+  else
+    subs({seq(sp[i]=g[i],i=1..d[b1])},f)
+  fi
+end:
+#
+# Create an array whose i-th term is the b2-expansion of b1.i, i=1..d.
+#
+`SF/to_ehp/subs`:=proc(b1,b2,d) local dr,i,k,vars,g,sig;
+  if nargs>3 and args[4]>0 then dr:=min(d,args[4]) else dr:=d fi;
+  if b1='e' or b2='e' then
+    vars:=[seq((-1)^(i-1)*cat(b2,i),i=1..dr),0$(d-dr)]
+  else
+    vars:=[seq(cat(b2,i),i=1..dr),0$(d-dr)]
+  fi;
+  g:=array(0..d,[0=1]);
+  if b2='p' then
+    for k to d do
+      g[k]:=expand(convert([seq(g[k-i]*vars[i],i=1..k)],`+`))/k
+    od;
+  elif b1='p' then
+    if b2='h' then vars:=map(x->-x,vars); sig:=-1 else sig:=1 fi;
+    for k to d do g[0]:=sig*k;
+      g[k]:=expand(convert([seq(g[k-i]*vars[i],i=1..k)],`+`))
+    od;
+  else
+    for k to d do
+      g[k]:=expand(convert([seq(g[k-i]*vars[i],i=1..k)],`+`))
+    od;
+  fi; op(g) 
+end:
+#
+save `SF/to_ehp`, `SF/to_ehp/subs`, cat(HomeLib,`/SF/to_ehp.m`);
+quit;
+

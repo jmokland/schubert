@@ -1,0 +1,58 @@
+#
+# skew_shapes           - generate all skew shapes of a given size
+# connected_skew_shapes - generate all connected skew shapes of a given size
+# print_shape           - prettyprint a skew shape
+#
+# Calling Sequence:
+#  skew_shapes(n);
+#  connected_skew_shapes(n);
+#  print_shape([mu,nu]);
+#
+# Parameters:
+#    n   - a positive integer
+#  mu,nu - partitions
+#
+# Given a positive integer n, skew_shapes(n) generates a list of pairs of
+# partitions [mu,nu] for all skew shapes mu/nu of size n with no empty rows
+# or columns. The number of such shapes for n=1..10 is
+#            [1, 3, 9, 28, 87, 272, 850, 2659, 8318, 26025].
+#
+# Similarly, connected_skew_shapes(n) generates a list of all such shapes
+# that are connected. The number of connected shapes for n=1..10 is
+# The number of connected shapes for n=1..10 is
+#            [1, 2, 4,  9, 20,  46, 105,  242,  557,  1285].
+#
+# The function 'print_shape' is a prettyprinter for viewing skew shapes.
+#
+# Examples:
+#  skew_shapes(4);
+#  connected_skew_shapes(5);
+#  print_shape([[5,5,4,3,3,2,2],[3,2,2]]);
+
+skew_shapes:=proc(n) local k;
+  option remember;
+  if n=0 then RETURN([[[],[]]]) fi;
+  [seq(op(map(`skew_shapes/add`,skew_shapes(n-k),k,0)),k=1..n-1),[[n],[]]];
+end;
+
+connected_skew_shapes:=proc(n) local k;
+  option remember;
+  if n=0 then RETURN([[[],[]]]) fi;
+  [seq(op(map(`skew_shapes/add`,connected_skew_shapes(n-k),k,1)),k=1..n-1),
+    [[n],[]]];
+end;
+
+print_shape:=proc(shp) local dg,r;
+  dg:=zip((x,y)->[y,x-y],shp[1],shp[2],0);
+  for r in dg do printf(` %s\n`,cat(`.`$(r[1]),`*`$(r[2]))) od;
+  printf(`\n`);
+end;
+
+`skew_shapes/add`:=proc(shape,k,delta) local lambda,mu,j,l;
+  lambda:=shape[1]; l:=nops(lambda);
+  mu:=[op(shape[2]),0$l];
+  l:=[seq([[j+k,op(lambda)],[j,op(mu)]],
+    j=max(mu[1],lambda[1]-k)..lambda[1]-delta)];
+  op(subs(0=NULL,l));
+end:
+

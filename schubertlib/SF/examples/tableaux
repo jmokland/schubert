@@ -1,0 +1,36 @@
+#
+# tableaux - generate all standard Young tableaux of a given shape
+#
+# Calling sequence:
+#  tableaux(lambda);
+#
+# Parameters:
+#  lambda - a partition
+#
+# Given a partition lambda, tableaux(lambda) generates a list consisting of
+# all standard Young tableaux of shape lambda. Each tableau is represented
+# as a list of lists, with the i-th term being the list of numbers in row i.
+#
+# The tableaux are arranged in last-letter-highest-row-order; i.e., S
+# precedes T if the largest number that appears in different rows of S
+# and T appears in an earlier row of S than of T.
+#
+# If T is a tableau, 'array(T)' provides a quick way to prettyprint T.
+#
+# Examples:
+#  tableaux([3,2]);
+
+tableaux:=proc(mu) local nu,n,i,old,new;
+  n:=convert(mu,`+`); new:=NULL;
+  if n=0 then RETURN([[]]) fi;
+  if nops(mu)<2 then RETURN([[[$1..n]]]) fi;
+  for i to nops(mu) do
+    if i<nops(mu) and mu[i]=mu[i+1] then next fi;
+    if mu[i]>1 then nu:=mu[i]-1 else nu:=NULL fi;
+    old:=tableaux(subsop(i=nu,mu));
+    if mu[i]=1 then old:=map(x->[op(x),[]],old) fi;
+    new:=new,op(map((x,j,m)->subsop(j=[op(x[j]),m],x),old,i,n))
+  od;
+  [new]
+end;
+

@@ -1,0 +1,14 @@
+M7R0
+I+SF/getrowsf*6"6#%"uGF$F$C$?&8$7#9"%%trueG@$3-%%typeG6$F)%"=G/-%#opG6$"""F).%&
+nrowsG-%'RETURNG6#-F56$""#F)""!F$F$F$F$,
+I+SF/getbasef*F$6#%"iGF$F$C$?(F)F?F79#F,@$-F06$&F+6#F).%%nameG-F;6#<#-%*SF/veri
+fyG6#FK%)SF/BasesGF$F$F$F$,
+I)SF/shapef*6%%"fG%"bG%"dG6#%"kGF$F$7#-%$seqG6$-%"$G6$,$F)!""-%'degreeG6$9$-%$c
+atG6$9%F_o/F);,$9&F`oF`oF$F$F$F$,
+I)SF/bytesf*F$F$F$F$-%+kerneloptsG6#%+bytesallocGF$F$F$F$,
+I*SF/normalf*6%FY%%varsG%"vG6#%"gGF$F$C%@&-F06$Fdo-.%(polynomG6$.%)rationalGFho
+-F;6#Fdo-F06$Fdo.-F`q6#Fcq-F;6#-%'expandGFeq>F)-%(collectG6&FdoFho.%,distribute
+dG%'normalG@'-F06$F).-%(ratpolyGFjqF)-F06$F)%"+G-%$mapG6&%.SF/normal/zapGF)FhoF
+\p-Fbs6%F)FhoF\pF$F$F$F$,
+I.SF/normal/zapf*6%FYFfp%"mGF%F$F$C$?&F)FhoF,@$0-Fbo6$FdoF)-Fbo6$F\pF)FdqF@F$F$
+F$F$

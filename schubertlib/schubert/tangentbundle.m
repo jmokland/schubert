@@ -1,0 +1,12 @@
+M7R0
+I7schubert/tangentbundlef*6#%"XG6'%$curG%"cG%"rG%$dimG%"AG6"F,C&@$/9#""!-%'RETU
+RNG6#%8usage:~tangentbundle(X)G@$4-%%typeG6$9$.%&tableG-%&ERRORG6#%Gargument~mu
+st~be~a~variety~or~morphismG@$4-%)assignedG6#&F;6#%/tangentbundle_GC%@+/&F;6#%&
+kind_G%1projectivespace_GC&>8$%0currentvariety_G>8'%$DIMG-%+setvarietyG6#F;>FG,
+&*&,&FW"""FinFinFin-%"oG6$-%#opG6#&F;6#%+variables_GF;FinFin!""Fin/FM%.grassman
+nian_GC(>FSFT>FVFWFX>8&&F;6#%'arank_G>8%&F;6#%&name_G>FG-%$HomG6$,&FjoFin-%$cat
+G6$.%"QGF_pFcoFhp/FM%2projectivebundle_GC(>FSFT>FVFW-%#upGFZ>8(&F;6#%.vectorbun
+dle_G>F_pF]o>FG,&-%#&@G6$-%%dualG6#Feq-F[o6#F_pFinFcoFin/FM%1grassmannbundle_GC
+(>FSFT>FVFWFbq>FeqFfq>F_pF`p>FG-Fep6$,&FeqFinFhpFcoFhp-F?6#%Qnot~enough~informa
+tion~to~compute~tangent~bundleG>&F;6#%+toddclass_G-%%toddGFF@$-FE6#FSC$>FTFS>FW
+FVFGF,6$FTFWF,F,

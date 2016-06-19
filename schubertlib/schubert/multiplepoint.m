@@ -1,0 +1,17 @@
+M7R0
+I7schubert/multiplepointf*6$%"fG%"kG62%"aG%"cG%#coG%"iG%"jG%"lG%"mG%"nG%$outG%"
+pG%%pushG%"qG%"rG%#sqG%#ssG%"uG6#%)rememberG6"C-@$/9#""!-%'RETURNG6#%:usage:~mu
+ltiplepoint(f,k)G@$/9%"""-FA6#FG>&8%6#F?FG>8+,$&9$6#%+dimension_G!"">&8-FM&FL6#
+FO?(8'FGFG*&FOFG,&FFFGFUFGFG%%trueGC$>&826#FfnF??(8(F?FGFfnFin?(8)F?FG,&FfnFGF`
+oFUFinC$@%1F`oFO>8&-&%)combinatG6#%)numbcombG6$,&FOFGF`oFUFbo>Fho*&)FUFboFG-Fjo
+6$,*F`oFGFOFUFboFGFUFGFboFG>F\o,&F\oFG*(FhoFG&FL6#F`oFG)83FcoFGFG?(F`oFGFG*&,&F
+fnFGFGFGFGFOFGFin>&8/6$FGF`o&FL6#,&FOFGF`oFG?(FfnF?FG,&FFFG!"$FGFinC(>8.-%'expa
+ndG6#-%%subsG6$-%$seqG6$/&FL6#8*&F]oFhr/Fir;FGF^q&FXF^o?(F`oF?FGF^qFin>&8$6$Ffn
+F`o-%&coeffG6%F\rF\qF`o@$2F?Ffn?(FboF?FG*(,(FFFGFfnFU!"#FGFGF_qFGFOFGFinC$>&Fbq
+6$F_qFboF??(FirF?FG,&FfnFGFUFGFin?(F`oF?FG*&,&FirFGFGFGFGFOFGFin>F^t,&F^tFG*&&F
+as6$FirF`oFG&Fbq6$,&FfnFGFirFU,&FboFGF`oFGFGFG>&FX6#F_qF??(FboF?FGFfnFin?(F`oFG
+FG*&,&FboFGFGFGFGFOFGFin>F_u,&F_uFG*&&Fas6$FboF`oFG&Fbq6$,(FfnFGFGFGFboFUF`oFGF
+G>F_u*&-F^r6#F_uFG,&FfnFG""#FGFU>8,-%*upperstarG6$FR-%*lowerstarG6$FR-%.multipl
+epointG6$FRFhn?(FfnF?FG,&FFFGF[tFGFinC%>81%%NULLG?(80FGFGF^qFin>Fbw6$Fbw/&FL6#F
+ew-%&chernG6$Few-%-normalbundleG6#FR>Fdv,&FdvFG**)FUF_qFG-%(productG6$.,(FFFGFU
+FGF`oFU/.F`o;F?FfnFG-Far6$FbwF]sFG-F\w6$FR,(FFFGFUFGFfnFUFGFG-F^r6#FdvF:F:F:F:

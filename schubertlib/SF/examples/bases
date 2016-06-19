@@ -1,0 +1,52 @@
+#
+# Definitions for commonly used SF bases. See Section 4 of the
+# TeX document "A Maple package for symmetric functions."
+#
+# These definitions are intended to be copied into a Maple session
+# line-by-line, or copied into other user-created files. Some of the
+# names are used more than once, so errors will be triggered if the
+# entire file is read during a Maple session.
+#
+# Each of these orthogonal bases is triangular w.r.t. every refinement
+# of dominance order, so we have included the optional 'natural' flag.
+#
+# 1. Hall-Littlewood symmetric functions.
+# These are the P-functions in Chapter III in Macdonald's book:
+#
+add_basis(HL, mu->zee(mu,0,t), 'natural');
+#
+# The duals of the P-functions are the Q-functions:
+#  
+add_basis(Q, mu->zee(mu,0,t), mu->hooks(mu,0,t), 'natural');
+#
+# 2. The "modified" Schur functions S in this subject are dual to the usual
+# Schur functions, relative to the H-L scalar product.
+#
+dual_basis(S, s, mu->zee(mu,0,t));
+#
+# 3. Zonal polynomials. Here there is a question of choosing the "right"
+# normalization. The following normalization sets the coefficient of p1^n to
+# be 1 and the coefficient of m[1,...,1] (n 1's) to be n!.
+#
+add_basis(Z, mu->zee(mu,2), mu->hooks(mu,2), 'natural');
+#
+# 4. Jack symmetric functions. Here we use 'a', instead of alpha as the
+# free parameter. Again there is a question of normalization; the following
+# choice sets the coefficient of p1^n to be 1 and of m[1,...,1] to be n!.
+#
+add_basis(J, mu->zee(mu,a), mu->hooks(mu,a), 'natural');
+#
+# 5. Macdonald's symmetric functions. Conforming to Macdonald's notation,
+# the P-functions are...
+#
+add_basis(P, mu->zee(mu,q,t), 'natural');
+#
+# and the Q-functions are...
+# 
+bee:=proc(mu) hooks(mu,q,t)/hooks(conjugate(mu),t,q) end;
+add_basis(Q, mu->zee(mu,q,t), bee, 'natural');
+#
+# and the integral form of the Macdonald polynomials are...
+#
+add_basis(J, mu->zee(mu,q,t), mu->hooks(mu,q,t), 'natural');
+

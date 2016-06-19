@@ -1,0 +1,10 @@
+M7R0
+I3schubert/lowerstarf*6$%"fG%"xG6*%"XG%"YG%"mG%"nG%"jG%"kG%$monG%$cofG6"F0C,@$/
+9#""!-%'RETURNG6#%Ausage:~lowerstar(f,y)~or~f~&-*~yG@$5/&9$6#%&kind_G%1grassman
+nbundle_G/F=%2projectivebundle_GC%>8+7#-%'coeffsG6%-%'expandG6#9%&F>6#%+variabl
+es_G.8*>FS7#FS-F76#-FL6#-%$addG6$*&&FF6#8("""-%0schubert/lookupG6$&F>6#%+lowers
+tar_G&FSFinF[o/Fjn;F[o-%%nopsG6#FF>8$&F>6#%(source_G>8%&F>6#%(target_G@$4-%)ass
+ignedG6#&F^p6#%'basis_G-%.additivebasisG6#F^p>8&&F^p6#%+dimension_G>8'&FioF`q>8
+)-%,codimensionG6$FioFN@$2F^q,&FcqF[oFfq!""-F76#F5-Fen6$*&-%)integralG6$Fio*&-%
+*upperstarG6$F>&&&F^p6#%+dualbasis_G6#F\rFinF[oFNF[oF[o&&Fgp6#,(F^qF[oFcqF]rFfq
+F[oFinF[o/Fjn;F[o-Ffo6#&FgpF_sF0F0F0F0

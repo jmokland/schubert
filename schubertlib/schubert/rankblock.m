@@ -1,0 +1,15 @@
+M7R0
+I3schubert/rankblockf*6%%#AAG%%rowsG%%colsG6.%"AG%"BG%"nG%"mG%"iG%"jG%"cG%"rG%"
+tG%$rowG%$colG%"pG6"F5C0@$4-%%typeG6$8$.%'matrixG>F<-%&evalmG6#9$@$F8-%&ERRORG6
+#%>1st~argument~must~be~a~matrixG>8&-&%'linalgG6#.%'rowdimG6#F<>8'-&FM6#.%'cold
+imGFQ>8%-%&arrayG6$;"""FJ;FinFS?(8(FinFinFJ%%trueG?(8)FinFinFSF]oC$@$4-F:6$&F<6
+$F\oF_o-%(ratpolyG6#%)rationalG-FF6#%Lmatrix~entries~must~be~rational~polynomia
+lsG>&FZFfo-%'normalG6#Feo?(F\oFinFinFJF]oC$>&8-6#F\oF\o>&8/FhpF\o>8.%%NULLG>8+F
+in?(8*FS!""Fin1F`qFJC&-%)userinfoG6%"#6%&debugG-%$catG6&%4elimination~at~row~GF
+`q%&~col~GFbq?(F\oF`qFinFJ/&FZ6$FjpFbq""!F5?(F_o,&F\oFinFinFinFinFJF]oC$@$/&FZ6
+$&F[q6#F_oFbqFdr\@$2-%$absG6#Fjr-Fbs6#Fbr>F\oF_o@$1F\oFJC&@$0F\oF`qC&>8,Ffp>Ffp
+&Fgp6#F`q>F`tF^t?(F_oFinFinFbqF]oC%>F^tF_p>F_p&FZ6$F`qF_o>FgtF^t>F]q6$F]qFbq?(F
+\o,&F`qFinFinFinFinFJF]oC&@$/&FZ6$F\oFbqFdrF^s>F^t-Fap6#*&FauFin&FZ6$F`qFbqFcq?
+(F_oFinFin,&FbqFinFcqFinF]o>F_p-Fap6#,&F_pFin*&F^tFinFgtFinFcq>FauFdr>F`qF]u>9&
+-%%sortG6#7#F]q>Fgp7#-%$seqG6$Ffp/F\o;Fin,&F`qFinFcqFin>9%-Fev6#Fgp-%%evalG6#-&
+FM6#%*submatrixG6%FC-Few6#Faw-Few6#FcvF5F5F5F5

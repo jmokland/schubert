@@ -1,0 +1,59 @@
+#
+# macd - accelerated computation of Macdonald symmetric functions
+#
+# Calling sequence:
+#  macd(n);
+#  macd(n,verbose);
+#
+# Parameters:
+#  n - a positive integer
+#
+# Given a positive integer n, macd(n) first uses add_basis (if necessary)
+# to insert the integral form of the Macdonald symmetric functions into
+# the current session, using the basis name 'J'. It then computes the
+# e-function expansion of J[mu] for each partition of n, and caches the
+# results in a remember table. One can then process symmetric function
+# expressions involving the J[mu]'s in the same way as with any other
+# symmetric functions defined by SF.
+#
+# The algorithm is faster and more efficient than using add_basis alone.
+# For example, it exploits the duality between J[mu] and J[mu'] (where '
+# denotes conjugation), a feature that does not exist for general bases
+# defined via add_basis.       
+#
+# In the second (verbose) form, diagnostic information is printf'ed each
+# time a new function J[mu] has been decomposed into the e-basis.
+#
+# Reference:
+#  I. Macdonald, "Symmetric Functions and Hall Polynomials", Chapter VI.
+#
+# Examples: 
+#  with(SF);
+#  macd(6,verbose);
+#  dual_basis(S, s, mu->zee(mu,0,t));
+#  toS(J[3,3]);
+
+macd:=proc(n) local st,st0,sp,spc,i,j,nu,f;
+  interface(quiet=true); st0:=time();
+  sp:=SF['Par'](n); spc:=map(SF['conjugate'],sp);
+  if not member(J[],`SF/Bases`) then
+    SF['add_basis'](J,mu->SF['zee'](mu,q,t),mu->SF['hooks'](mu,q,t),true);
+    `SF/added`(J,[]); # avoid clobbering the remember table
+  fi;
+  for i to nops(sp) do
+    st:=time(); nu:=sp[i]; member(nu,spc,'j');
+    if j<i then
+      f:=SF['top'](J[op(nu)],J[]);
+      f:=SF['omega'](SF['theta'](f,q,t),'p','e');
+      `SF/added/gs`(J,nu):=[0,subs({q=t,t=q},f)];
+    else
+      `SF/added/gs`(J,nu)
+    fi;
+    if nargs>1 then printf(`Time %7.3f  Space %8d  %a\n`,
+      time()-st,`SF/bytes`(),spc[i]) fi;
+  od;
+  interface(quiet=false);
+  printf(`Done with n=%-2d  Time %8.3f  Space %8d\n`,
+    n,time()-st0,`SF/bytes`());
+end;
+

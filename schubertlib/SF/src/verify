@@ -1,0 +1,24 @@
+#
+# Check whether b or b[] is a known basis.
+#
+`SF/verify`:=proc(b)
+  if member(b,`SF/Bases`) then b
+    elif member(b[],`SF/Bases`) then b[]
+    else ERROR(cat(b,` is not a known basis`))
+  fi
+end:
+#
+# `SF/apply`(b,f,...) verifies the existence of `to`.b, then 
+#    applies it to f,...
+#
+`SF/apply`:=proc() local b,pr;
+  b:=`SF/verify`(args[1]);
+  if type(b,'indexed') then b:=op(0,b) fi;
+  pr:=cat(`to`,b);
+  if type(pr,'procedure') then pr(args[2..nargs])
+    else SF[pr](args[2..nargs]) fi;
+end:
+# 
+save `SF/verify`, `SF/apply`, cat(HomeLib,`/SF/verify.m`);
+quit;
+

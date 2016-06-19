@@ -1,0 +1,23 @@
+#
+# hooks(lambda)      is the list of hook-lengths in lambda.
+# hooks(lambda,a)    is the Jack hook-product.
+# hooks(lambda,q,t)  is the two-variable hook polynomial.
+#
+`SF/hooks`:=proc(mu,z,w) local nu,i,j,q,t;
+  nu:=SF['conjugate'](mu);
+  if nargs=1 then
+    nu:=[seq(seq(mu[i]-i+nu[j]-j+1,j=1..mu[i]),i=1..nops(mu))];
+    sort(nu,(x,y)->evalb(x>y))
+  elif nargs=2 then
+    nu:=[seq(seq(z*(mu[i]-j)+nu[j]-i+1,j=1..mu[i]),i=1..nops(mu))];
+    convert(nu,`*`)
+  else
+    nu:=[seq(seq((1-q^(mu[i]-j)*t^(nu[j]-i+1),j=1..mu[i])),i=1..nops(mu))];
+    subs(q=z,t=w,convert(nu,`*`))   # Maple is immature about 0^0
+  fi
+end:
+#
+save `SF/hooks`, cat(HomeLib,`/SF/hooks.m`);
+read cat(HomeLib,`/help/SF/hooks`);
+quit;
+

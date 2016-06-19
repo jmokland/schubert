@@ -1,0 +1,26 @@
+#
+# subPar(mu)   returns all partitions that fit inside the diagram of mu.
+# subPar(mu,n) does the same, restricted to the set of partitions of n.
+#
+`SF/subPar`:=proc(mu,n) local m,i,l,nu,j;
+  l:=nops(mu);
+  if nargs=1 then
+    if mu=[] then RETURN([[]]) fi;
+    for i to l-1 while mu[i]=mu[i+1] do od;
+    if mu[i]>1 then j:=mu[i]-1 else j:=NULL fi;
+    [seq([mu[1]$i,op(nu)],nu=`SF/subPar`([op(i+1..l,mu)])),
+      op(`SF/subPar`(subsop(i=j,mu)))]
+  else
+    m:=convert(mu,`+`);
+    if n>m or n<0 then RETURN([]) elif n=m then RETURN([mu]) fi;
+    for i to l-1 while mu[i]=mu[i+1] do od; 
+    if mu[i]>1 then j:=mu[i]-1 else j:=NULL fi; 
+    [seq([mu[1]$i,op(nu)],nu=`SF/subPar`([op(i+1..l,mu)],n-i*mu[1])),
+      op(`SF/subPar`(subsop(i=j,mu),n))]
+  fi
+end:
+#
+save `SF/subPar`, cat(HomeLib,`/SF/subPar.m`);
+read cat(HomeLib,`/help/SF/subPar`);
+quit;
+

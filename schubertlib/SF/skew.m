@@ -1,0 +1,15 @@
+M7R0
+I(SF/skewf*6"6(%"fG%#ipG%"bG%%varsG%"iG%"gGF$F$C)@%/-%%modpG6$9#""#""!>8%&%#SFG
+6#.%$zeeG>F6&9"6#F2@%2""$F2>8&7#&F>6#;FB""%C$>&FD6#"""%%NULLG>&FD6#F3FO>8$7#-%$
+seqG6$-&F86#.%$topG6$&F>6#8(&FDFjn/F[o;FNF3>FT-%$mapG6%f*6$%"xG%"yGF$6$%)operat
+orG%&arrowGF$-Fao6$%.SF/skew/parseG-%.SF/homog_cmpsG6$9$9%F$F$F$FT.%"pG>FT-%(co
+nvertG6$7#-FW6$-%#opG6#-Fao6&%+SF/skew/hgG&FTFM8)F6/Fbq&FTFR%"+G>8'7#-FW6$-%$ca
+tG6$FbpF[o/F[o;FN-&F86#.%'varsetG6$FTFbp-%(collectG6&FTFgq.%,distributedG%'norm
+alGF$F$F$F$,
+I.SF/skew/parsef*6#F&6$F*%#tfGF$F$7%7#-%'coeffsG6%&F`pFM7#-FW6$-F\r6$FbpFT/FT;F
+N&F`pFR.F67#F6F^tF$F$F$F$,
+I+SF/skew/hgf*6%F&F+F'6'%"dG%"cG%#muG%"vG%$resGF$F$C(>FT,&&Fap6#FBFN&F`pF^u!""@
+$2FTF4-%'RETURNG6#F4>FD-%%subsG6$/F4FO7#FT>F[oF4?(F$FNFNF$0FDFOC'>Fgq-Ffp6$-Fao
+6$f*6#FeoF$FgoF$-F\r6$FbpF`pF$F$F$FD%"*G>F67%Ffs-Fao6%f*FdoF$FgoF$*&F`pFNFapFNF
+$F$F$F^tFgqF]u>F6-&F86#.%'scalarG6'FapF6F4F49&>F[o,&F[oFN*&-F[s6#*&F6FN-Fgw6#FD
+F`uFNFgqFNFN>FD-&F86#.%(nextParGF_xF[oF$F$F$F$

@@ -1,0 +1,55 @@
+#
+# varset(f,<bases>) will return a table whose entries describe the
+# sets of variables from <bases> that occur in symmetric function f.
+#
+# <bases> may be a list or set of string names and indexed names. For
+# an indexed name such as 's[]', there will be a table entry indexed
+# by 's' consisting of a list of partitions that indicate the support
+# of this basis in f. For a string name such as 'p', there will be a
+# table entry indexed by 'p' equal to the largest n s.t. p.n occurs in f.
+#
+# We assume that string names of bases are single characters.
+#
+# If <bases> is a name (not a list or set), then the entry of the above
+# table corresponding to this name, not the table itself, is returned.
+# If the second argument is omitted, the default is <bases>=`SF/Bases`.
+#
+`SF/varset`:=proc(f) local inds,strs,one_base,b,v,res,i,digits;
+  inds:={}; strs:={}; res:=table(); one_base:=false;
+  if nargs=1 then b:=`SF/Bases` else b:=args[2] fi;
+  if type(b,'name') then one_base:=true; b:={b} fi;
+  for v in b do
+    if type(v,'indexed') then
+      inds:={op(inds),op(0,v)}; res[op(0,v)]:=NULL
+      else strs:={op(strs),v}; res[v]:=0
+    fi
+  od;
+  if nops(strs)>0 then digits:=table([seq(cat(i)=i,i=0..9)]) fi;
+  for v in indets(f,'name') do
+    if type(v,'indexed') then b:=op(0,v);
+      if member(b,inds) then res[b]:=res[b],[op(v)] fi
+    else b:=substring(v,1..1);
+      if member(b,strs) then
+        res[b]:=max(res[b],`SF/varset/deg`(v,digits)) fi
+    fi
+  od;
+  for b in inds do res[b]:=[res[b]] od;
+  if one_base then res[op(strs),op(inds)] else op(res) fi;
+end:
+#
+# If deleting the first character of string v yields a positive
+# integer n then return n; otherwise, return 0.
+#
+`SF/varset/deg`:=proc(v,digits) local i,j,n;
+  n:=0;
+  for i from 2 to length(v) do
+    j:=substring(v,i..i);
+    if not assigned(digits[j]) then RETURN(0) fi;
+    n:=10*n+digits[j]
+  od; n
+end:  
+#
+save `SF/varset`, `SF/varset/deg`, cat(HomeLib,`/SF/varset.m`);
+read cat(HomeLib,`/help/SF/varset`);
+quit;
+

@@ -1,0 +1,11 @@
+M7R0
+I3schubert/tosmatrixf*6$%"nG%"kG6-%"dG%"PG%#aaG%"AG%"iG%"jG%$cofG%$monG%$numG%#
+MMG%"pG6"F3C.-%)userinfoG6%"#5%&debugG%0enter~tosmatrixG>8%-%'SF/ParG6$9$9%>8.-
+%%nopsG6#F<-F66%"#:F9%;start~generating~monomialsG?(8)"""FMFC%%trueGC$>8$-FE6#&
+F<6#FL>&8-FU*&-%(productG6$.)-%$catG6$.%"eG8(,&&FT6#F^oFM&FT6#,&F^oFMFMFM!""/F^
+o;FM,&FQFMFeoFMFM)-Fjn6$F\oFQ&FT6#FQFM?(F^oFMFMFCFN>&8,6#&FXFaoF^o>F^o.F^o-F66%
+F8F9%;generate~schur~polynomialsG>8'-&%'linalgG6#%'matrixG6%FCFC""!?(F^oFMFMFCF
+NC*-F66%FIF9F^o>8&-%*SF/jt_detG6%&F<FaoFaqF\oFdq>Fgq-%%subsG6$-%$seqG6$/-Fjn6$F
+\oFLFaq/FL;,&FAFMFMFMF@Fgq>8*7#-%'coeffsG6%-%'expandG6#Fgq7#-Fjn6$F\o;FMFA.8+>F
+gs7#Fgs?(FLFMFM-FE6#FgsFN>&Fjp6$F^o&Fap6#&FgsFU&FjrFUFdq-F66%F8F9%4Invert~the~m
+atrix:~G-%%evalG6#-%>schubert/unitriangularinverseG6#FjpF3F3F3F3

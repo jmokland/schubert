@@ -1,0 +1,31 @@
+#
+# toh(f)    convert the symmetric function f into an h-polynomial.
+# toh(f,b)  does the same, assuming f is expressed solely in basis b.
+# The final result is collected with respect to h1,h2,h3,...
+# If b is not a predefined basis, f must be *linear* in the b[..]'s.
+#
+`SF/toh`:=proc() local f,bases,sp,i,mu,d,b,c;
+  f:=args[1]; bases:=`SF/getbase`(args) minus {'h'};
+  sp:=SF['varset'](f,bases minus {'p','e'});
+  for b in bases minus {'e','p','s[]'} do
+    c:=op(0,b); if sp[c]=[] then next fi;
+    if assigned(`SF/dual`[c]) then
+      f:=`SF/dualize`(c,sp[c],f); bases:={op(bases),'p'}
+    else
+      f:=`SF/added`(c,sp[c],f); bases:={op(bases),'e'}
+    fi
+  od;
+  if member('s[]',bases) then b:='h';
+    if nops(sp['s'])>1 then b:=NULL; bases:={op(bases),'e'} fi;
+    f:=subs({seq(s[op(mu)]=`SF/jt_det`(mu,0,b),mu=sp['s'])},f);
+  fi;
+  if member('p',bases) then f:=`SF/to_ehp`('p','h',f) fi;
+  if member('e',bases) then f:=`SF/to_ehp`('e','h',f) fi;
+  d:=SF['varset'](f,'h');
+  collect(f,[seq(cat('h',i),i=1..d)],'distributed',normal);
+end: 
+#
+save `SF/toh`, cat(HomeLib,`/SF/toh.m`);
+read cat(HomeLib,`/help/SF/toh`);
+quit;
+

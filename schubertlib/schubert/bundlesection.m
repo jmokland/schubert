@@ -1,0 +1,10 @@
+M7R0
+I7schubert/bundlesectionf*6$%"ZG%"FG6&%"XG%'classZG%"kG%"mG6"F,C1@$/9#""!-%'RET
+URNG6#%:usage:~bundlesection(Z,F)G@$4-%%typeG6$9$%%nameG-%&ERRORG6#%Iusage:~bun
+dlesection(name,vector~bundle)G>8$%0currentvariety_G>8%-%&chernG6$-%%rankG6#9%F
+L>F;-%&tableG6#7%/%+dimension_G,&%$DIMG"""FI!""/%+variables_G&FB6#FY/%)degrees_
+G&FB6#Fgn-%)morphismG6%-%$catG6$.%"iGF;F;FB>&F]o6#%&kind_G%/bundlesection_G>&F;
+6#%/tangentbundle_G-%*upperstarG6$F]o,&&FBFioFVFLFW>&F;FdoFfo>&F;6#%.structurem
+ap_GF]o>&F;6#%'class_GFE-%*monomialsG6#F;?(8&F1FV&F;6#FS%%trueG?&8'&&F;6#%+mono
+mials_G6#F^qFaq>&&F;6#%0monomialvalues_G6#Fcq-%)integralG6$FB*&FcqFVFEFV-%+setv
+arietyGF\q-%&whereGF,F,F,F,F,

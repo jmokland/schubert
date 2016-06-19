@@ -1,0 +1,43 @@
+#
+# skew(f,g)       applies the linear transformation f^* to g,
+#  where f^* denotes the adjoint to multiplication by f.
+# skew(f,g,ip)    does the same, relative to the inner product ip.
+# skew(f,g,b1,b2) does the same, assuming f is in base b1 and g is in b2.
+# skew(f,g,b1,b2,ip) combines both options.
+# 
+`SF/skew`:=proc() local f,ip,b,vars,i,g;
+  if modp(nargs,2)=0 then ip:=SF['zee'] else ip:=args[nargs] fi;
+  if nargs>3 then b:=[args[3..4]] else b[1]:=NULL; b[2]:=NULL fi;
+  f:=[seq(SF['top'](args[i],b[i]),i=1..2)];
+  f:=map((x,y)->map(`SF/skew/parse`,`SF/homog_cmps`(x,y)),f,'p');
+  f:=convert([seq(op(map(`SF/skew/hg`,f[1],g,ip)),g=f[2])],`+`);
+  vars:=[seq(cat('p',i),i=1..SF['varset'](f,'p'))];
+  collect(f,vars,'distributed',normal);
+end:
+#
+# Given f=[poly,d], where poly is a homogeneous p-polynomial
+# of degree d, return the triple [coeffs,terms,d].
+#
+`SF/skew/parse`:=proc(f) local i,tf;
+  [[coeffs(f[1],[seq(cat('p',i),i=1..f[2])],'tf')],[tf],f[2]]
+end:
+#
+# Apply f^* to g, assuming f and g are homogeneous p-polynomials
+# structured by the output of skew/parse.
+#
+`SF/skew/hg`:=proc(f,g,ip) local d,c,mu,v,res;
+  d:=g[3]-f[3]; if d<0 then RETURN(0) fi;
+  mu:=subs(0=NULL,[d]); res:=0;
+  while mu<>NULL do
+    v:=convert(map(x->cat('p',x),mu),`*`);
+    c:=[f[1],map((x,y)->x*y,f[2],v),g[3]];
+    c:=SF['scalar'](g,c,0,0,ip);
+    res:=res+normal(c/ip(mu))*v;
+    mu:=SF['nextPar'](mu);
+  od; res
+end:
+#
+save `SF/skew`, `SF/skew/parse`, `SF/skew/hg`, cat(HomeLib,`/SF/skew.m`);
+read cat(HomeLib,`/help/SF/skew`);
+quit;
+

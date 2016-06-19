@@ -1,0 +1,10 @@
+M7R0
+I1schubert/varietyf*6*%"XG%"aG%"bG%"cG%"dG%"eG%"fG%"gG6$%$optG%$strG6"F0C+@$/9#
+""!-%'RETURNG6#%?usage:~variety(name,<options>)G@$4-%%typeG6$9$%%nameG-%&ERRORG
+6#%7first~arg~must~be~nameG>F?-%&tableGF0?&8$7#&9"6#;""#F4%%trueG@$-F=6$FI%"=GC
+$>8%-%*substringG6$-%#opG6$"""FI;Fhn""$@.3/FW.%$dimG-F=6$-Ffn6$FOFI%(integerG>&
+F?6#%+dimension_GFbo3/FW.%$varG-F=6$Fbo%%listG>&F?6#%+variables_GFbo3/FW.%$degG
+F]p>&F?6#%)degrees_GFbo3/FW.%$relGF]p>&F?6#%+relations_GFbo/FW.%$poiG>&F?6#%'po
+int_GFbo/FW.%$tanG>&F?6#%/tangentbundle_GFbo@$4-%)assignedG6#Ffo>Ffo%$DIMG@$-Fe
+r6#Faq-%/monomialvaluesG6#F?@$4-F=6$&FL6#F4FTC$>FW-FY6$FcsFin@$5/FW.%$basG/FW.%
+$allG-%.additivebasisGF^s-%+setvarietyGF^s-%&whereGF0F0F0F0F0

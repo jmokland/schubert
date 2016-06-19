@@ -1,0 +1,72 @@
+#
+# Assume b is a basis created by 'add_basis', and that sp is either
+#  a list of partitions or a single partition.
+# With three arguments, replace all occurrences of b[mu] in f0 for
+#  all mu in sp with their corresponding e-expansions.
+# With two arguments, assume sp is a single partition,
+#  and return the e-expansion of b[conjugate(sp)].
+#
+`SF/added`:=proc(b,sp,f0) local f,mu;
+  if nargs>2 then
+    f:=subs({seq(b[op(mu)]=
+      `SF/added/gs`(b,SF['conjugate'](mu))[2],mu=sp)},f0)
+  else
+    f:=`SF/added/gs`(b,sp)[2]
+  fi;
+  subs(map(x->`SF/added/etable`(x)[1],SF['varset'](f,e[])),f)
+end:
+#
+# Given a user-added basis b, compute and remember the e-monomial
+#  expansion of b[mu'] (NOTICE: this is conjugate(mu), not mu)
+#  via the Gram-Schmidt algorithm. The initial ordered basis is
+#  the set of e-monomials, ordered lexicographically as in 'Par'.
+# The results are returned in the form [N,f], where N is the squared norm
+#  of b[mu'] and f is an expression for b[mu'] as a collected linear
+#  combination of terms e[...], where (for example) e[3,3,2,1] represents
+#  the e-monomial e3^2*e2*e1. 
+# If `SF/nondom`[b] is false, assume that basis b
+#  is triangular with respect to dominance order.
+# FUTURE: The optimal frequency of collecting/normalizing the coeffs may
+#  need further tuning depending on the ground ring and the Maple version.
+#
+`SF/added/gs`:=proc(b,mu) local g,lc,f,f0,sc,nu,N,c;
+  option remember;
+  lc:=`SF/lcoeff`[b](SF['conjugate'](mu));
+  f:=lc*e[op(mu)]; g:=`SF/added/etable`(mu)[2];
+  sc:=[]; nu:=subs(0=NULL,[convert(mu,`+`)]);
+  N:=lc^2*SF['scalar'](g,g,0,0,`SF/iprod`[b]);
+  while nu<>mu do
+    if `SF/nondom`[b] or SF['dominate'](nu,mu) then
+      c:=`SF/added/etable`(nu)[2];
+      c:=normal(SF['scalar'](g,c,0,0,`SF/iprod`[b]));
+      sc:=[op(sc),e[op(nu)]=c];
+      f0:=`SF/added/gs`(b,nu);
+      c:=normal((lc/f0[1])*subs(sc,f0[2])); f:=f-c*f0[2];
+      if length(f)>20000 then  #see FUTURE
+        f:=collect(f,map(x->op(1,x),sc),'distributed',normal) fi;
+      N:=N-c^2*f0[1];
+      if length(N)>1000 then N:=normal(N) fi;  #see FUTURE
+    fi;
+    nu:=SF['nextPar'](nu)
+  od;
+  [factor(N),collect(f,map(x->op(1,x),sc),'distributed',normal)];
+end:
+#
+# Remember two things about each e-monomial:
+# 1. A substitution that replaces the dummy variable e[mu] used by
+#   SF/added/gs with the actual e-monomial, and
+# 2. The p-expansion of the e-monomial in the format used by 'scalar'.
+#
+`SF/added/etable`:=proc(mu) local v,g,tf,vars,j,d;
+  option remember;
+  v:=convert([seq(cat('e',j),j=mu)],`*`);
+  d:=op(1,[op(mu),0]);
+  vars:=[seq(cat('p',j),j=1..d)];
+  g:=coeffs(SF['top'](v,'e'),vars,'tf');
+  [e[op(mu)]=v,[[g],[tf],d]]
+end:
+#
+save `SF/added`, `SF/added/gs`, `SF/added/etable`,
+  cat(HomeLib,`/SF/added.m`);
+quit;
+

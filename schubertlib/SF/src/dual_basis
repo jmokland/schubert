@@ -1,0 +1,48 @@
+#
+# Define a new basis b1 that is dual to some existing basis b2.
+# Supply an optional scalar product as args[3] (default = zee).
+#
+# `SF/Bases`, `SF/dual`, and `SF/iprod` are subversively global
+#
+`SF/dual_basis`:=proc(b1,b2) local a,ip;
+  if type(b1,'indexed') then a:=op(0,b1) else a:=b1 fi;
+  if member(a[],`SF/Bases`) or member(a,`SF/Bases`) then
+    ERROR(cat(`base `,a,` is already in use`)) fi;
+  if nargs>2 then ip:=args[3] else ip:=SF['zee'] fi;
+  assign([`SF/dual`[a]=`SF/verify`(b2), `SF/iprod`[a]=ip,
+    evaln(`SF/Bases`)={op(`SF/Bases`),a[]}]);
+  assign(cat(`to`,a)=proc() local f,B,b;
+    B:=substring(procname,3..length(procname)); 
+    b:=`SF/dual`[B]; f:=SF['top'](args);
+    if type(args[nargs],'list') then
+      `SF/dual_basis/to`([f,0],B,b,args[nargs])
+    else
+      f:=`SF/homog_cmps`(f,'p');
+      convert(map(`SF/dual_basis/to`,f,B,b),`+`)
+    fi
+  end);
+  'Okay';
+end: 
+#
+# Convert a p-polynomial f0=[f,d] into a linear combination of B[mu]'s.
+# If there is a fourth argument, it should be a list of partitions
+# that contain the B-support of f. Otherwise, we make no assumptions
+# about B-support except that f is homogeneous of degree d.
+#
+`SF/dual_basis/to`:=proc(f0,B,b) local f,sp,res,mu,v,j,d;
+  if nargs>3 then sp:=args[4] else sp:=SF['Par'](f0[2]) fi;
+  d:=SF['varset'](f0[1],'p');
+  f:=[coeffs(f0[1],[seq(cat('p',j),j=1..d)],'v')];
+  f:=[f,[v],d]; res:=0;
+  for mu in sp do
+    if type(b,'indexed') then v:=op(0,b)[op(mu)]
+      else v:=convert(map((x,y)->cat(y,x),mu,b),`*`) fi;
+    v:=SF['scalar'](f,v,0,b,`SF/iprod`[B]);
+    res:=res+normal(v)*B[op(mu)];
+  od; res
+end:
+#
+save `SF/dual_basis`, `SF/dual_basis/to`, cat(HomeLib,`/SF/dual_basis.m`);
+read cat(HomeLib,`/help/SF/dual_basis`);
+quit;
+

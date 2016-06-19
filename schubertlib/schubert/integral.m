@@ -1,0 +1,9 @@
+M7R0
+I2schubert/integralf*6"6'%"XG%"cG%$cofG%$monG%"jGF$F$C)@$/9#""!-%'RETURNG6#%Dus
+age:~integral(c)~or~integral(X,c)G@'/F.""#C$>8$&9"6#""">8%&F;6#F6/F.F=C$>F9%0cu
+rrentvariety_G>F?F:-%&ERRORG6#%Bwrong~number~of~arguments.~Usage:G@$5/&F96#%&ki
+nd_G%2projectivebundle_G/FN%1grassmannbundle_G-F16#-%)integralG6$&F96#%-basevar
+iety_G-%*lowerstarG6$&F96#%3structuremorphism_GF?@$4-%)assignedG6#&F96#%0monomi
+alvalues_G-F16#.-9!6#F;>8&7#-%'coeffsG6%-%'expandG6#F?&F96#%+variables_G.8'>Fgp
+7#Fgp-%$addG6$*&&F[p6#8(F=-%0schubert/lookupG6$Fao&FgpF_qF=/F`q;F=-%%nopsG6#F[p
+F$F$F$F$

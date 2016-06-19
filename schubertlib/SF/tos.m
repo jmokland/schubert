@@ -1,0 +1,14 @@
+M7R0
+I'SF/tosf*6"6-%"bG%"cG%"dG%"jG%"fG%$denG%&nrowsG%%varsG%#muG%$resG%"vGF$F$C)>8*
+-%+SF/getrowsG6#9"@%2""!F3C%>8(-&%#SFG6#.%$toeGF6>8$.%"eG>8&-%$minG6$F3-&F@6#.%
+&stdegG6$F=FEC&>F=-&F@6#.%$tohGF6>FE.%"hG>FIFM>F3%%NULLG>8+7#-%$seqG6$-%$catG6$
+FE,$8'!""/Fdo;,$FIFeoFeo>8-F:>F=-%-SF/tos/numerG6%F=F[o.8)?(F$"""FbpF$0F=F:C)>8
+%-%'tcoeffG6%F=F[o.8.>8,-%)SF/shapeG6%F[qFEFI>F=,&F=Fbp*&FfpFbp-%'expandG6#-&%'
+linalgG6#.%$detG6#-&F@6#.%*jt_matrixG6&F]q7"FEF3FbpFeo>F=-%*SF/normalG6%F=F[oF[
+q@$/FEFF>F]q-&F@6#.%*conjugateG6#F]q>Fjo,&*&-%'normalG6#*&FfpFbpF`pFeoFbp&%"sG6
+#-%#opGFasFbpFbpFjoFbp-%)userinfoG6'""#%$tosGFfpF]q-%%nopsG6#F=FjoF$F$F$F$,
+I-SF/tos/numerf*6$F*F-6%%$cfsG%$tmsGF+F$F$@'-%%typeG6$9$-.%(polynomG6$.%)ration
+alG9%C%>FI-%&denomG6#F`u-%'assignG6$&F76#""$FI*&FIFbpF`uFbp-F^u6$F`u.-%(ratpoly
+G6#FfuC'>FE7#-%'coeffsG6%F`uFgu.Ffp>FI-%$lcmG6#-F]t6#-%$mapG6$F[vFEF]v>FE-Fhw6%
+f*6$%"xG%"yGF$6$%)operatorG%&arrowGF$-Ffs6#*&F`uFbpFguFbpF$F$F$FEFI-%(convertG6
+$-%$zipG6%f*F^xF$FaxF$FfxF$F$F$FE7#Ffp%"+GC$-F^v6$F`vFbpF`uF$F$F$F$

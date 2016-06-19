@@ -1,0 +1,16 @@
+M7R0
+I8schubert/productvarietyf*6'%"WG%"XG%"YG%$pr1G%$pr2G6,%#dxG%#dyG%"mG%#mmG%"iG%
+"jG%"kG%"bG%"dG%#dbG6"F5C-@$/9#""!-%'RETURNG6#%hnusage:~productvariety(W,X,Y)~o
+r~productvariety(W,X,Y,pr1,pr2)G>8$&9%6#%+dimension_G>8%&9&FC>9$-%&tableG6#7%/F
+D,&F@"""FFFQ/%+variables_G7$-%#opG6#&FB6#FS-FV6#&FHFY/%)degrees_G7$-FV6#&FB6#Fh
+n-FV6#&FHF]o@$3-%)assignedG6#&FB6#%0monomialvalues_G-Fdo6#&FHFgoC$-%*monomialsG
+6#FJ?&8&&&FB6#%+monomials_G6#F@%%trueG?&8'&&FHFdp6#FFFgp>&&FJFgo6#*&FapFQFipFQ*
+&&Ffo6#FapFQ&F[p6#FipFQ@$3-Fdo6#&FB6#%'point_G-Fdo6#&FHF\r>&FJF\r*&F[rFQF`rFQ@$
+3-Fdo6#&FB6#%/tangentbundle_G-Fdo6#&FHFir>&FJFir,&FhrFQF]sFQ@$3-Fdo6#&FB6#%'bas
+is_G-Fdo6#&FHFfs?(8,F:FQFPFgpC'>8+%%NULLG>8-F`t?(8(-%$maxG6$F:,&F\tFQF@!""FQ-%$
+minG6$F\tFFFgpC$>F_t6$F_t-%$seqG6$-Fau6$-%'expandG6#*&&&Fes6#,&F\tFQFdtFit6#8)F
+Q&&Fjs6#Fdt6#8*FQ/F^v;FQ-%%nopsG6#Fju/Fcv;FQ-Fgv6#F`v>Fbt6$Fbt-Fau6$-Fau6$-Ffu6
+#*&&&&FB6#%+dualbasis_G6#,(F@FQF\tFitFdtFQF]vFQ&&&FHFiw6#,&FFFQFdtFitFbvFQFdvFi
+v>&&FJFfs6#F\t7#F_t>&&FJFiw6#,(F@FQFFFQF\tFit7#Fbt@$/F9""&C&-%)morphismG6%9'FJF
+B-Fby6%9(FJFH>&Fdy6#%&kind_G%)product_G>&FgyFjyF\z-%+setvarietyGF_p-%&whereGF5F
+5F5F5F5

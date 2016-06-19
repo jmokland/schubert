@@ -1,0 +1,14 @@
+M7R0
+I7schubert/additivebasisf*6#%"XG6,%$invG%"DG%"kG%#RkG%$RDkG%"AG%"iG%"jG%%rowsG%
+%colsG6"F1C+@$/9#""!-%'RETURNG6#%8usage:~additivebasis(X)G@$4-%%typeG6$9$%&tabl
+eG-%&ERRORG6#%>Usage:~additivebasis(variety)G@$4-%)assignedG6#&F@6#%+monomials_
+G-%*monomialsG6#F@@$4-FI6#&F@6#%0monomialvalues_G-%/monomialvaluesGFP>8%&F@6#%+
+dimension_G>8&F6?(F1"""F\oF11Fjn,&FenF\oFjn!""C*>8'&FK6#Fjn>8(&FK6#F^o-%)userin
+foG6%"#5%&debugG-%$catG6&%3matrix~dimensions~G-%%nopsG6#Fbo%$~x~G-Fcp6#Ffo>8)-%
+&arrayG6#7#-%$seqG6$7#-F_q6$-%0schubert/lookupG6$FU*&&Fbo6#8*F\o&Ffo6#8+F\o/F]r
+;F\oFfp/Fjq;F\oFbp>8$-&%'linalgG6#.%*transposeG6#-&Ffr6#.%(inverseG6#-%3schuber
+t/rankblockG6%Fip.8,.8->&&F@6#%'basis_GFdo7#-F_q6$&Fco6#&FesFiq/Fjq;F\o-Fcp6#Fe
+s>&&F@6#%+dualbasis_GFho-%(convertG6$-&Ffr6#%)multiplyG6$Fcr-F[q6#7#-F_q6$&Fgo6
+#&FgsFiq/Fjq;F\o-Fcp6#Fgs%%listG>Fjn,&FjnF\oF\oF\o?(FjnF6F\o,&Fen#F\o""##F_oFfv
+F\o%%trueGC$>&FjsFhoFht>&FitFdoFis-F_p6$%Ca~pair~of~dual~bases~computed~for~GF@
+F1F1F1F1

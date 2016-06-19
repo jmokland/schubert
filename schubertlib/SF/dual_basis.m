@@ -1,0 +1,15 @@
+M7R0
+I.SF/dual_basisf*6$%#b1G%#b2G6$%"aG%#ipG6"F*C(@%-%%typeG6$9$.%(indexedG>8$-%#op
+G6$""!F0>F4F0@$5-%'memberG6$&F4F*%)SF/BasesG-F=6$F4F@-%&ERRORG6#-%$catG6%%&base
+~GF4%3~is~already~in~useG@%2""#9#>8%&9"6#""$>FP&%#SFG6#.%$zeeG-%'assignG6#7%/&%
+(SF/dualG6#F4-%*SF/verifyG6#9%/&%)SF/iprodGF\oFP/-%&evalnG6#F@<$F?-F6Fgo-Ffn6#/
+-FG6$%#toGF4f*F*6%%"fG%"BG%"bGF*F*C&>FP-%*substringG6$9!;FT-%'lengthG6#Fjp>8&&F
+[o6#FP>F4-&FW6#.%$topG6#FR@%-F.6$&FR6#FN.%%listG-%1SF/dual_basis/toG6&7$F4F8FPF
+`qF]rC$>F4-%.SF/homog_cmpsG6$F4.%"pG-%(convertG6$-%$mapG6&FbrF4FPF`q%"+GF*F*F*.
+%%OkayGF*F*F*F*,
+I1SF/dual_basis/tof*6%%#f0GFcpFdp6)Fbp%#spG%$resG%#muG%"vG%"jG%"dGF*F*C)@%2FTFN
+>FP&FR6#""%>FP-&FW6#.%$ParG6#&F06#FM>8*-&FW6#.%'varsetG6$&F06#"""Fjr>F47#-%'coe
+ffsG6%Fhu7#-%$seqG6$-FG6$Fjr8)/Ffv;FjuFau.8(>F47%F47#FjvFau>F`qF8?&8'FP%%trueGC
+%@%-F.6$9&F1>Fjv&-F66$F8Ffw6#-F66#F`w>Fjv-F]s6$-F`s6%f*6$%"xG%"yGF*6$%)operator
+G%&arrowGF*-FG6$F`oF0F*F*F*F`wFfw%"*G>Fjv-&FW6#.%'scalarG6'F4FjvF8Ffw&FcoF_o>F`
+q,&F`qFju*&-%'normalG6#FjvFju&F`oF[xFjuFjuF`qF*F*F*F*

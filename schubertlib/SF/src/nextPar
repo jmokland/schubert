@@ -1,0 +1,21 @@
+#
+# Generate the next partition after mu in lexicographic order.
+# If mu is the last partition (i.e., mu=[1,1,...,1]), return NULL.
+# Note that this generates partitions in the same order as Par(n),
+#  but is noticeably faster and more space-efficient for larger n.
+#
+# Example: mu:=[9]; while mu<>NULL do <something>; mu:=nextPar(mu) od;
+#
+`SF/nextPar`:=proc(mu) local i,k,m,r;
+  if member(1,mu,'i') then i:=i-1 else i:=nops(mu) fi;
+  if i=0 then NULL else
+    k:=mu[i]-1; m:=iquo(nops(mu)-i+mu[i],k,'r');
+    if r=0 then r:=NULL fi;
+    [op(1..i-1,mu),k$m,r]
+  fi
+end:
+#
+save `SF/nextPar`, cat(HomeLib,`/SF/nextPar.m`);
+read cat(HomeLib,`/help/SF/nextPar`);
+quit;
+

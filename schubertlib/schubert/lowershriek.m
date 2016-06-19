@@ -1,0 +1,9 @@
+M7R0
+I5schubert/lowershriekf*6$%"fG%"AG6$%$tmpG%"iG6"F*C%@$/9#""!-%'RETURNG6#%Cusage
+:~lowershriek(f,A)~or~f~&-!~AG@$4-%%typeG6$7#9"7$%&tableG%)anythingG-%&ERRORG6#
+%0wrong~argumentsG@%5/&9$6#%&kind_G%2projectivebundle_G/FE%1grassmannbundle_GC$
+-%#upG6#FF-%'expandG6#*&-%*lowerstarG6$FF-%#&@G6$9%&FF6#%+toddclass_G""")%"tG&F
+F6#%+dimension_G!""C'-%+setvarietyG6#&FF6#%(source_G@$4-%)assignedG6#&FF6#%/tan
+gentbundle_G>F[p,&&FcoF\pFhn-%*upperstarG6$FF&&FF6#%(target_GF\pF^o@$4-Fio6#Fen
+-%*toddclassGFO>8$-FQ6#FW-FQ6#-%$addG6$*&-FU6$FF-%&coeffG6%F_qFjn8%Fhn)Fjn,&F]r
+FhnF[oF^oFhn/F]r;-%$maxG6$F/F[o&FcoF\oF*F*F*F*

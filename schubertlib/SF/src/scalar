@@ -1,0 +1,42 @@
+#
+# scalar(f,g) computes the scalar product of the symmetric functions f
+#  and g with respect to the form for which the power sums are orthogonal
+#  and <p[mu],p[mu]>=zee(mu).
+# scalar(f,g,b1,b2) does the same, assuming f is in base b1 and g in b2.
+# scalar(f,g,Z) or scalar(f,g,b1,b2,Z) does the same, relative to the
+#  form for which the power sums are orthogonal and <p[mu],p[mu]>=Z(mu).
+#
+`SF/scalar`:=proc() local f,g,tf,ip,b,d,u,mu,j,res;
+  if nargs=3 or nargs=5 then ip:=args[nargs] else ip:=SF['zee'] fi;
+  if nargs>3 then b:=[args[3..4]] else b[1]:=NULL; b[2]:=NULL fi;
+  f:=[seq(`SF/scalar/parse`(args[j],b[j]),j=1..2)];
+  res:=0; d:=min(f[1][3],f[2][3]);
+  if nops(f[1][2])<=nops(f[2][2]) then
+    g:=zip((x,y)->[x,y],f[1][1],f[1][2]); tf:=f[2][2]; f:=f[2][1]
+  else
+    g:=zip((x,y)->[x,y],f[2][1],f[2][2]); tf:=f[1][2]; f:=f[1][1]
+  fi;
+  for u in g do
+    if member(u[2],tf,'j') then
+      mu:=`SF/shape`(u[2],'p',d);
+      res:=res+ip(mu)*u[1]*f[j];
+    fi
+  od; res
+end:
+#
+# Parse the data specified by f and a base/flag b:
+# If b=0 assume that f=[coeffs,terms,d], represent the coefficients,
+# terms, and max occurring p.d in some p-polynomial. Return f.
+# Otherwise, assume f is a symmetric function in base b (or in unknown
+# form if b=NULL). Convert f to base p and return [coeffs,terms,d].
+#
+`SF/scalar/parse`:=proc(f,b) local g,i,d,tms;
+  if nargs>1 and b=0 then RETURN(f) fi;
+  g:=SF['top'](args); d:=SF['varset'](g,'p');
+  [[coeffs(g,[seq(cat('p',i),i=1..d)],'tms')],[tms],d]
+end:
+#
+save `SF/scalar`, `SF/scalar/parse`, cat(HomeLib,`/SF/scalar.m`);
+read cat(HomeLib,`/help/SF/scalar`);
+quit;
+

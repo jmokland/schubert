@@ -1,0 +1,21 @@
+#
+# When nrows=0, evaluate s[mu] as the determinant of a Jacobi-Trudi
+#  matrix of either e's or h's, whichever version has fewer rows.
+# Supply an optional third argument b='e' or b='h' to override the choice.
+# When nrows>0, then all of the matrix variables b.n for n>nrows are
+#  killed before the determinant is computed.
+#
+`SF/jt_det`:=proc(mu,nrows) local b,nu;
+  if mu=[] then RETURN(1) fi;
+  if nargs>2 then b:=args[3]
+    elif nops(mu)>mu[1] then b:='e'
+    else b:='h'
+  fi;
+  if b='e' then nu:=SF['conjugate'](mu) else nu:=mu fi;
+  if nrows>0 then b:=b,nrows fi;
+  expand(linalg['det'](SF['jt_matrix'](nu,[],b)));
+end:  
+#
+save `SF/jt_det`, cat(HomeLib,`/SF/jt_det.m`);
+quit;
+

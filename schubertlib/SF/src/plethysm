@@ -1,0 +1,26 @@
+#
+# plethysm(f,g) computes the plethysm f[g] of symmetric functions f,g.
+# plethysm(f,g,b1,b2)   does the same assuming f is in base b1 and g in b2.
+# plethysm(f,g,b)       does the same but converts the output to base b.
+# plethysm(f,g,b1,b2,b) does both. The default output is base 'p'.
+#
+`SF/plethysm`:=proc() local d,i,f,b;
+  if nargs>3 then b:=[args[3..4]] else b[1]:=NULL; b[2]:=NULL fi;
+  f:=[seq(SF['top'](args[i],b[i]),i=1..2)];
+  d:=map(SF['varset'],f,'p');
+  f:=subs(map(`SF/plethysm/one`,[$1..d[1]],d[2],f[2]),f[1]);
+  f:=collect(f,[seq(cat('p',i),i=1..d[1]*d[2])],'distributed',normal);
+  if modp(nargs,2)=1 then `SF/apply`(args[nargs],f,'p') else f fi;
+end:
+#
+# Compute the special plethysm f[g], where f = p.r and g has degree dg,
+# and return the result as a substitution for f.
+#
+`SF/plethysm/one`:=proc(r,dg,g) local i;
+  cat('p',r)=subs({seq(cat('p',i)=cat('p',r*i),i=1..dg)},g)
+end:
+#
+save `SF/plethysm`, `SF/plethysm/one`, cat(HomeLib,`/SF/plethysm.m`);
+read cat(HomeLib,`/help/SF/plethysm`);
+quit;
+

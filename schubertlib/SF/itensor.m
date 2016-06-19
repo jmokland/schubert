@@ -1,0 +1,10 @@
+M7R0
+I+SF/itensorf*6"6,%"bG%"dG%"jG%"fG%"gG%#tfG%"uG%"cG%$resG%%varsGF$F$C+@%2""$9#>
+8$7#&9"6#;F3""%C$>&F66#"""%%NULLG>&F66#""#FB>8'7#-%$seqG6$-&%#SFG6#.%$topG6$&F9
+6#8&&F6FU/FV;FAFF>8%-&FO6#.%'varsetG6$FH.%"pG>8,""!>8-7#-FK6$-%$catG6$F\oFV/FV;
+FAFen>FH7&7#-%'coeffsG6%&FHF@Fbo.8)7#Fcp7#-F_p6%&FHFEFboFbpFdp@%1-%%nopsG6#Fhp-
+F\q6#&FH6#F<C%>8(-%$zipG6%f*6$%"xG%"yGF$6$%)operatorG%&arrowGF$7$9$9%F$F$F$FapF
+hp>FcpF`q>FH&FH6#F3C%>Fdq-Ffq6%f*FiqF$F\rF$F_rF$F$F$FdrF`q>FcpFhp>FHFap?&8*Fdq%
+%trueG@$-%'memberG6%&F^sFEFcp.FVC$>8+-&FO6#.%$zeeG6#-%)SF/shapeG6%FdsF\oFen>F_o
+,&F_oFA*&-%'normalG6#*(FhsFA&F^sF@FA&FHFUFAFAFdsFAFA@%/-%%modpG6$F4FFFA-%)SF/ap
+plyG6%&F96#F4F_oF\oF_oF$F$F$F$

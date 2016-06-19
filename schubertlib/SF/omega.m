@@ -1,0 +1,10 @@
+M7R0
+I)SF/omegaf*6"6+%"fG%#spG%"jG%"bG%"aG%#b0G%#muG%#b1G%&basesGF$F$C->8$&9"6#""">8
+)<&.%"eG.%"hG.%"pG.&%"sGF$>8,%)SF/BasesG@$2F59#C$>8+-%*SF/verifyG6#&F36#""#>FC<
+#FJ>FC-%&minusG6$FCF7>8%-&%#SFG6#.%'varsetG6$F1FC?&8'FC%%trueGC&>8(-%#opG6$""!F
+[o@$/&FX6#F_o7"\@%-%)assignedG6#&%(SF/dualGFgoC$>F1-%+SF/dualizeG6%F_oFfoF1>FJF
+=C$>F1-%)SF/addedGFdp>FJF9@$FF>F1-%)SF/applyG6%FJF1FJ>FJ-%%subsG6$<$/F9F;/F;F9F
+J>FX-FZ6$F1F7>F1-Fbq6$<&-%$seqG6$/&FA6#-Fao6#8*&FA6#-Fao6#-&Fen6#.%*conjugateGF
+er/Ffr&FX6#.FA-F_r6$/-%$catG6$F98&-Fhs6$F;Fjs/Fjs;F5&FX6#F9-F_r6$/F[tFgs/Fjs;F5
+&FX6#F;-F_r6$/-Fhs6$F=Fjs*&)!"",&FjsF5F_uF5F5F[uF5/Fjs;F5&FX6#F=F1@%2FPFG-F^q6%
+&F36#""$F1FJF1F$F$F$F$

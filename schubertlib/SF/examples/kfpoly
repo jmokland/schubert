@@ -1,0 +1,113 @@
+#
+# kfpoly   - generate Kostka-Foulkes polynomials via rigged configurations
+# schur2HL - decompose a Schur function into a linear combination of
+#            Hall-Littlewood symmetric functions
+#
+# Calling sequence:
+#  kfpoly(mu,nu,t);
+#  schur2HL(mu);
+#
+# Parameters:
+#  mu,nu - partitions
+#    t   - a variable name
+#
+# The Kostka-Foulkes polynomial K[mu,nu](t) is the coefficient of the
+# Hall-Littlewood function HL[nu] in the Schur function s[mu]; these
+# polynomials are expressible as sums of products of t-binomial
+# coefficients via rigged configurations, and occur in many different
+# contexts related to representation theory and flag varieties.
+#
+# kfpoly(mu,nu,t) computes the Kostka-Foulkes polynomial K[mu,nu](t)
+# by generating all rigging sequences for the shape mu, and then
+# selecting those of content nu.
+#
+# schur2HL(mu) returns the Hall-Littlewood expansion of the Schur function
+# s[mu]. The coefficients are the Kostka-Foulkes polynomials K[mu,nu](t).
+#
+# Both procedures are *much* faster than what would be obtained by using
+# add_basis in SF to achieve equivalent functionality.
+#
+# References:
+#  (for Kostka-Foulkes polynomials):
+#  I. Macdonald, "Symmetric Functions and Hall polynomials," Chapter III.
+#  (for rigged configurations):
+#  A. Kirillov and N. Reshetikhin, The Bethe ansatz and the combinatorics
+#  of Young tableaux, J. Soviet Math. 41 (1988), 925-955.
+#
+# Examples:
+#   with(SF);
+#   kfpoly([4,3,2,1],[3,2,2,2,1],q);
+#   schur2HL([4,2]);
+
+kfpoly:=proc(mu,nu,t) local res,nuc;
+  if mu=nu then RETURN(1) elif mu=[] then RETURN(0) fi;
+  nuc:=SF['conjugate'](nu);
+  res:=map(proc(x,y,z) if x[1]=y then `kfpoly/wt`(x,z) fi end,
+    `kfpoly/riggings`(mu),nuc,t);
+  expand(convert(res,`+`))
+end;
+
+schur2HL:=proc(mu) local res,rg,sp,i;
+  if mu=[] then RETURN(HL[]) fi;
+  res:=table('sparse');
+  for rg in `kfpoly/riggings`(mu) do
+    res[rg[1]]:=res[rg[1]]+`kfpoly/wt`(rg,t)
+  od;
+  sp:=map(op,[indices(res)]);
+  convert([seq(expand(res[i])*HL[op(SF['conjugate'](i))],i=sp)],`+`)
+end;
+
+# generate all possible rigging sequences for a fixed lambda
+
+`kfpoly/riggings`:=proc(lambda) local l,sl,res,sa,nu,i,new;
+  l:=nops(lambda); sl:=sort(lambda);
+  res:=[[[],[]]]; sa:=0;
+  for i in sl do sa:=sa+i;
+    res:=[seq(seq([new,op(nu)],
+      new=`kfpoly/compat`(sa,nu[1],nu[2])),nu=res)];
+  od;
+  map((x,y)->[op(1..y,x)],res,l);
+end:
+
+# generate all possible partitions of n that can precede mu,nu
+# in a rigging sequence
+
+`kfpoly/compat`:=proc(n,mu,nu) local sp,l,mmu,nnu,bd,sa,i;
+  sp:=map(SF['conjugate'],SF['Par'](n));
+  l:=max(nops(mu),nops(nu));
+  mmu:=[op(mu),0$l]; nnu:=[op(nu),0$l];
+  bd:=NULL; sa:=0;
+  for i to l do sa:=sa+2*mmu[i]-nnu[i]; bd:=bd,sa od;
+  for i to nops(sp) while not `kfpoly/dom`(sp[i],[bd]) do od;
+  if i>nops(sp) then RETURN([]) fi;
+  map(SF['conjugate'],SF['dominate'](SF['conjugate'](sp[i])));
+end:
+
+# return true/false according to whether mu[1]+...+mu[i] >= snu[i], all i
+
+`kfpoly/dom`:=proc(mu,snu) local l,i,sa,mmu;
+  l:=nops(snu); mmu:=[op(mu),0$l]; sa:=0;
+  for i to l do sa:=sa+mmu[i];
+    if sa<snu[i] then RETURN(false) fi
+  od; true
+end:
+
+# the weight of a rigging
+
+`kfpoly/wt`:=proc(rg,t) local nu,mu,l,res,sa,k,i;
+  nu:=[op(rg),[]]; l:=1+max(op(map(nops,nu)));
+  nu:=[seq([op(mu),0$l],mu=nu)];
+  res:=t^convert([seq(i*(i-1)/2,i=rg[nops(rg)])],`+`);
+  for k from 2 to nops(nu)-1 do
+    sa:=0; for i to max(nops(rg[k]),nops(rg[k-1])) do
+      sa:=sa+nu[k-1][i]-2*nu[k][i]+nu[k+1][i];
+      res:=res*`kfpoly/qbin`(nu[k][i]-nu[k][i+1],sa,t);
+      mu:=nu[k-1][i]-nu[k][i]; res:=res*t^(mu*(mu-1)/2)
+    od
+  od; res
+end:
+
+`kfpoly/qbin`:=proc(a,b,t) local i;
+  normal(convert([seq((1-t^(a+b+1-i))/(1-t^i),i=1..min(a,b))],`*`))
+end:
+

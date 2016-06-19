@@ -1,0 +1,10 @@
+M7R0
+I.schubert/Projf*6&%"fG%"AG%"cG%$strG6'%$curG%"rG%"iG%$segG%#stG6"F/C4@$/9#""!-
+%'RETURNG6#%Iusage:~Proj(f,A,c)~or~Proj(f,A,c,option)G>8$%0currentvariety_G>8%-
+%%rankG6#9%>9$-%&tableGF/>&FC6#%.vectorbundle_GFA>&FC6#%+dimension_G,&F="""!""F
+O>&FC6#%/basedimension_G%$DIMG>&FC6#%+variables_G7#9&>&FC6#%)degrees_G7#FO>8'-%
+&segreG6%F4FUFA?(8&FNFO,(FUFOF=FOFPFO%%trueG>&&FC6#%+lowerstar_G6#)FenFao&F\o6#
+,(FaoFOF=FP""#FO>F;F:>FU,&FKFOFRFO>&FC6#%&kind_G%2projectivebundle_G@$/F3""%C$>
+8(-%*substringG6$&9"6#Fip;FO""$@$5/F\q.%$allG/F\q.%$tanG-%.tangentbundleG6#FC>&
+FC6#%)section_G)FenFN-%)userinfoG6%"#5%&whereG-%$catG6&%4currentvariety_~is~GF;
+%*,~DIM~is~GFUFCF/6$F;FUF/F/

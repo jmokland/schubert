@@ -1,0 +1,33 @@
+#
+# jt_matrix(lambda) produces the Jacobi-Trudi matrix corresponding to
+#   the partition lambda.
+# jt_matrix(lambda,mu) does the same, but for the skew shape defined by
+#   the pair of partitions lambda,mu (mu = inner shape).
+# jt_matrix(lambda,mu,b) does the same, but uses b as the base name for
+#   the entries of the matrix.
+# jt_matrix(lambda,mu,b,m) does the same, but kills all of the matrix
+#   entries of the form b.k for k>m.
+# Note that if lambda=mu=[], then the result should be a 0x0 matrix.
+# But Maple (wrongly) disallows this, so we produce a 1x1 matrix.
+#
+`SF/jt_matrix`:=proc() local b,n,i,j,mu,nu;
+  mu:=args[1];
+  if nargs>1 then nu:=args[2] else nu:=[] fi;
+  if nargs>2 then b:=args[3..nargs] else b:='h' fi;
+  n:=max(1,nops(mu),nops(nu));
+  mu:=[op(mu),0$n]; nu:=[op(nu),0$n];
+  array([seq([seq(`SF/jt_matrix/ent`(mu[i]-i+j-nu[j],b),j=1..n)],i=1..n)])
+end:
+#
+`SF/jt_matrix/ent`:=proc(k,b)
+  if k<0 then 0
+    elif k=0 then 1
+    elif nargs>2 and k>args[3] then 0
+    else cat(b,k)
+  fi
+end:
+#
+save `SF/jt_matrix`, `SF/jt_matrix/ent`, cat(HomeLib,`/SF/jt_matrix.m`);
+read cat(HomeLib,`/help/SF/jt_matrix`);
+quit;
+

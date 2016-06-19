@@ -1,0 +1,29 @@
+#
+# Par(n) returns a list of all partitions of n.
+# Par(n,l) returns the partitions of n with length <=l.
+# Par(n,k,l) returns the partitions of n with parts <=k, length <=l.
+#
+# Note: partition lists are lex-sorted first by largest part,
+# then second-largest part, etc. This consistency is important for
+# basis-conversion routines that involve Gram-Schmidt.
+#
+`SF/Par`:=proc(n)
+  if nargs=1 then `SF/Par/sub`(n,n,n)
+    elif nargs=2 then `SF/Par/sub`(n,n,args[2])
+    else `SF/Par/sub`(args)
+  fi
+end:
+#
+`SF/Par/sub`:=proc(n,row,col) local i;
+  if n=0 then [[]]
+    elif col=0 then []
+    else 
+      [seq(op(map((x,y)->[y,op(x)],`SF/Par/sub`(n+i,-i,col-1),-i)),
+        i=-min(row,n)..-iquo(n+col-1,col))]
+  fi
+end:
+#
+save `SF/Par`, `SF/Par/sub`, cat(HomeLib,`/SF/Par.m`);
+read cat(HomeLib,`/help/SF/Par`);
+quit;
+

@@ -1,0 +1,122 @@
+#
+# jacks - accelerated computation of Jack symmetric functions
+#
+# Calling Sequence:
+#  jacks(n);
+#  jacks(n,verbose);
+#
+# Parameters:
+#  n - a positive integer 
+#
+# Given a positive integer n, jacks(n) first uses add_basis (if necessary)
+# to insert Jack symmetric functions into the current SF session, using 'J'
+# as the basis name, and 'a' as the Jack parameter. It then computes the
+# e-function expansion of J[mu] for each partition of n, and caches the
+# results in a remember table. One can then process symmetric function
+# expressions involving the J[mu]'s in the same way as with any other
+# symmetric functions defined by SF.
+#
+# The algorithm is *much* faster and more space efficient than what would
+# be achieved by using add_basis alone. In particular, it exploits
+#  (1) the duality between J[mu] and J[mu'], where ' denotes conjugation.
+#  (2) the fact that the coefficients of J[mu] are polynomials in 'a' of
+#      degree at most n-length(mu).
+#  (3) the fact that there is a known formula for the norm of J[mu].
+#
+# In the second (verbose) form, diagnostic information is printf'ed each
+# time a new function J[mu] has been decomposed into the e-basis.
+#
+# Reference:
+#  I. Macdonald, "Symmetric Functions and Hall Polynomials", Sec. VI.10.
+#
+# Example:
+#  with(SF);
+#  jacks(6,verbose);
+#  tos(J[3,2,1]);
+
+jacks:=proc(n) local st,st0,j,vars,mu,nu;
+  interface(quiet=true); gc(); st0:=time();
+  if not member(J[],`SF/Bases`) then
+    SF['add_basis'](J,mu->SF['zee'](mu,a),mu->SF['hooks'](mu,a))
+  fi;
+  `SF/added`(J,[]); # avoid clobbering the remember table
+  vars:=[seq(cat('e',j),j=1..n)];
+  nu:=subs(0=NULL,[n]);
+  while nu<>NULL do
+    st:=time(); mu:=SF['conjugate'](nu);
+    if `jacks/lex`(mu,nu) then
+      `SF/added/gs`(J,nu):=[0,`jacks/dual`(mu,nu,n,vars)]
+    else
+      `SF/added/gs`(J,nu):=[`jacks/norm`(mu,nu),`jacks/gs`(mu,nu,n)]
+    fi;
+    if nargs>1 then printf(`Time %7.3f  Space %8d  %a\n`,
+      time()-st,`SF/bytes`(),mu) fi;
+    nu:=SF['nextPar'](nu);
+  od;
+  interface(quiet=false);
+  printf(`Done with n=%-2d  Time %9.3f  Space %8d\n`,
+    n,time()-st0,`SF/bytes`());
+end;
+
+# Return true if mu < nu in the lex ordering used by 'Par'.
+
+`jacks/lex`:=proc(mu,nu) local i,d;
+  d:=zip((x,y)->x-y,mu,nu,0);
+  for i in d do if i<>0 then RETURN(evalb(i>0)) fi od; false;
+end:
+
+# The squared norm of J[mu]
+
+`jacks/norm`:=proc(mu,nu) local i,j;
+  convert([seq(seq(a*(mu[i]-j)+nu[j]-i+1,j=1..mu[i]),i=1..nops(mu)),
+    seq(seq(nu[i]-j+a*(mu[j]-i+1),j=1..nu[i]),i=1..nops(nu))],`*`)
+end:
+
+# Compute J[mu] via the Gram-Schmidt algorithm, but use taylor series
+# up to degree n-nops(mu) in place of "normal" field arithmetic.
+# Might want to tinker with the length trigger (25000) for *large* n.
+
+`jacks/gs`:=proc(mu,nu,n) local g,lc,f,f0,sc,tau,c,N,m;
+  lc:=`SF/lcoeff`[J](mu); f:=lc*e[op(nu)];
+  g:=`SF/added/etable`(nu)[2];
+  sc:=[]; N:=n-nops(mu)+1;
+  tau:=subs(0=NULL,[n]);
+  while tau<>nu do
+    if SF['dominate'](tau,nu) then
+      c:=`SF/added/etable`(tau)[2];
+      c:=SF['scalar'](g,c,0,0,`SF/iprod`[J]);
+      m:=a^ldegree(c,a); c:=m*expand(numer(c)/m)/denom(c);
+      sc:=[op(sc),e[op(tau)]=c];
+      f0:=`SF/added/gs`(J,tau);
+      c:=subs(sc,f0[2]); m:=ldegree(f0[1],a);
+      if type(c,`+`) then c:=a^m*map((x,y)->x/y,c,a^m) fi;
+      c:=convert(taylor(lc*c/f0[1],a,N),'polynom');
+      f:=f-c*f0[2];
+      if length(f)>25000 then f:=convert(taylor(f,a,N),'polynom') fi;
+    fi;
+    tau:=SF['nextPar'](tau)
+  od;
+  f:=convert(taylor(f,a,N),'polynom');
+  collect(f,indets(f,'indexed'));
+end:
+
+# Compute the e-expansion of J[mu] by twisting the e-expansion
+# of J[nu]=J[mu']. Again use the taylor series trick.
+
+`jacks/dual`:=proc(mu,nu,n,vars) local f,j;
+  f:=`SF/added`(J,mu);
+  f:=subs({seq(vars[j]=`jacks/twist`(j),j=1..n)},f);
+  f:=taylor((-1)^n*f,a,n+1);
+  f:=[seq(expand(coeff(f,a,j))*a^(n-j),j=nops(mu)..n)];
+  collect(convert(f,`+`),vars,'distributed');
+end:
+
+# Remember the e-expansion of theta(e.n,-a).
+
+`jacks/twist`:=proc(n) local j,f;
+  option remember;
+  f:=SF['top'](cat('e',n));
+  f:=subs({seq(cat('p',j)=-a*cat('p',j),j=1..n)},f);
+  SF['toe'](f,'p');
+end:
+

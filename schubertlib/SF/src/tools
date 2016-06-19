@@ -1,0 +1,71 @@
+#
+## Various internal tools that are needed in multiple places
+#
+# Parse the argument list for an equation of the form 'nrows=<something>'.
+# If found, return the <something> of the first such equation.
+# Otherwise, return 0 as the default.
+#
+`SF/getrows`:=proc() local u;
+  for u in [args] do
+    if type(u,`=`) and op(1,u)='nrows' then RETURN(op(2,u)) fi
+  od; 0
+end:
+#
+# Parse the argument list (except args[1]) for a name.
+# Verify the first one found and return it as a singleton set.
+# If no names found, return `SF/bases` as the default.
+#
+`SF/getbase`:=proc() local i;
+  for i from 2 to nargs do
+    if type(args[i],'name') then RETURN({`SF/verify`(args[i])}) fi
+  od; `SF/Bases`
+end:
+#
+# Get the shape of a b-monomial f, given that b.d is the highest
+# degree variable that might occur in f.
+#
+`SF/shape`:=proc(f,b,d) local k;
+  [seq((-k)$degree(f,cat(b,-k)),k=-d..-1)]
+end:
+#
+# Report the number of bytes allocated.
+# We need this to work around feature-breakage that Maple imposes.
+#
+if `+`(0)=0 then # we are using Maple V.4 or later
+  `SF/bytes`:=proc() kernelopts(bytesalloc) end
+else
+  `SF/bytes`:=proc() 4*status[2] end
+fi:
+#
+# Put a sym function f into a normal form optimized for the ground field:
+#  *If the coeffs are rational, do nothing.
+#  *If the coeffs are polynomials over Q, expand f. This could waste a
+# lot of memory, but the improvement in speed is spectacular.
+#  *Otherwise, collect terms and apply normal to the coefficients.
+#  *If the coefficients are not ratpolys, then floating-point arithmetic,
+# radicals, or other obscenities are involved. In that case, make sure
+# that the leading term v has been zapped (prevent infinite loops).
+#
+`SF/normal`:=proc(f,vars,v) local g;
+  if type(f,'polynom'('rational',vars)) then RETURN(f)
+    elif type(f,'polynom(rational)') then RETURN(expand(f)) fi;
+  g:=collect(f,vars,'distributed',normal);
+  if type(g,'ratpoly(rational)') then g
+    elif type(g,`+`) then map(`SF/normal/zap`,g,vars,v)
+    else `SF/normal/zap`(g,vars,v)
+  fi
+end:
+#
+# If the monomial part of f matches m, zap it.
+# Otherwise pass it through unharmed.
+#
+`SF/normal/zap`:=proc(f,vars,m) local u;
+  for u in vars do
+    if degree(f,u)<>degree(m,u) then RETURN(f) fi
+  od; 0
+end:
+#
+save `SF/getrows`, `SF/getbase`, `SF/shape`, `SF/bytes`,
+  `SF/normal`, `SF/normal/zap`, cat(HomeLib,`/SF/tools.m`);
+quit;
+

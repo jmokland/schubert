@@ -1,0 +1,14 @@
+M7R0
+I*SF/to_ehpf*6$%#b1G%#b2G6(%"iG%"fG%"dG%"gG%#spG%%varsG6"F.C)>8%&9"6#""$>8&-&%#
+SFG6#.%'varsetG6$F1<$9$9%@$/&F76#F@""!-%'RETURNG6#F1>8'-%/SF/to_ehp/subsG6&F@FA
+FD&F36#;""%9#>8(7#-%$seqG6$-%$catG6$F@8$/Fgn;"""FD>8)7$-%#opG6#FU-FX6$-Fen6$FAF
+gn/Fgn;Fjn&F76#FA@%-%%typeG6$F1-.%(polynomG6$.%)rationalGF\oC%>F\o-%*intersectG
+6$-%'indetsGFI<#F^o?(FgnFjnFjnFD%%trueG@$-%'memberG6$&FU6#FgnF\o>F1-%'expandG6#
+-%%subsG6$/Faq&FKFbqF1F1-Fhq6$<#-FX6$FjqFhnF1F.F.F.F.,
+I/SF/to_ehp/subsf*6%F%F&F*6(%#drGF(%"kGF-F+%$sigGF.F.C'@%32F5FS2FF&F36#FR>Fgn-%
+$minG6$9&F]s>FgnFcs@%5/F@.%"eG/FAFhs>FK7$-FX6$*&)!"",&F1FjnFatFjnFjn-Fen6$FAF1F
+jn/F1;FjnFgn-%"$G6$FF,&FcsFjnFgnFat>FK7$-FX6$FctFetFgt>FU-%&arrayG6$;FFFcs7#/FF
+Fjn@'/FA.%"pG?(F7FjnFjnFcsF\q>&FU6#F7*&-Feq6#-%(convertG6$7#-FX6$*&&FU6#,&F7Fjn
+F1FatFjn&FKFIFjn/F1;FjnF7%"+GFjnF7Fat/F@FhuC$@%/FA.%"hGC$>FK-%$mapG6$f*6#%"xGF.
+6$%)operatorG%&arrowGF.,$F@FatF.F.F.FK>F\oFat>F\oFjn?(F7FjnFjnFcsF\qC$>&FU6#FF*
+&F\oFjnF7Fjn>F\vF_v?(F7FjnFjnFcsF\q>F\vF_vF^oF.F.F.F.

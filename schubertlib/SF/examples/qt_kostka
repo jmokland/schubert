@@ -1,0 +1,76 @@
+#
+# qt_kostka - generate the q,t-Kostka matrix
+#
+# Calling sequence:
+#  qt_kostka(n);
+#  qt_kostka(n,verbose);
+#
+# Parameters:
+#  n = a positive integer
+#
+# The q,t-Kostka matrix is the matrix whose [lambda,mu]-entry is the
+# coefficient of S[lambda] in J[mu], where S is the dual basis for the
+# Schur functions (relative to the Hall-Littlewood scalar product) and J
+# is the integral form of Macdonald's two-parameter symmetric functions.
+# These coefficients are known to be polynomials in q,t.
+#
+# Given a positive integer n, qt_kostka(n) generates a table whose indices
+# are pairs [lambda,mu], where lambda and mu range over the partitions
+# of n, and whose entries are the corresponding entries of the q,t-Kostka
+# matrix. The algorithm is much faster and more space efficient than
+# what would be obtained by using SF directly for the same computation.
+# For example, the algorithm exploits the duality between J[mu] and J[mu']
+# (where ' denotes conjugation), a feature that does not exist for general
+# bases defined via add_basis.
+#
+# In the second (verbose) form, diagnostic information is printf'ed each
+# time a new function J[mu] has been decomposed into the S-basis. Only
+# half of the partitions of n (approximately) are decomposed in this way--
+# the remaining decompositions are determined via duality.
+#
+# Reference:
+#  I. Macdonald, "Symmetric Functions and Hall Polynomials", Chapter VI.
+#
+# Examples:
+#  with(SF);
+#  K:=qt_kostka(4);
+#  K:=qt_kostka(7,verbose):
+#  K[[4,3],[3,2,1,1]];
+
+qt_kostka:=proc(n) local K,sp,spc,st,st0,mu,nu,i,j,f,vars;
+  interface(quiet=true); st0:=time();
+  if not member('S[]',`SF/Bases`) then
+    SF['dual_basis']('S','s',mu->SF['zee'](mu,0,t)) fi;
+  if not member(J[],`SF/Bases`) then
+    SF['add_basis'](J,mu->SF['zee'](mu,q,t),mu->SF['hooks'](mu,q,t),true);
+    `SF/added`(J,[]); # avoid clobbering the remember table
+  fi;
+  K:=table(); sp:=SF['Par'](n);
+  spc:=map(SF['conjugate'],sp);
+  for i to nops(sp) do
+    mu:=spc[i]; nu:=sp[i]; member(nu,spc,'j');
+    if j<i then
+      assign(seq(K[spc[j],mu]=subs({q=t,t=q},K[sp[j],nu]),j=1..nops(sp)))
+    else
+      st:=time(); f:=`SF/added/gs`(J,nu)[2];
+      vars:=SF['varset'](f,e[]);
+      f:=subs({seq(e[op(nu)]=`qt_kostka/e2S`(nu),nu=vars)},f);
+      f:=collect(f,indets(f,'indexed'),'distributed',normal);
+      assign(seq(K[nu,mu]=expand(coeff(f,S[op(nu)])),nu=spc));
+      if nargs>1 then printf(`Time %7.3f  Space %8d  %a\n`,
+        time()-st,`SF/bytes`(),mu) fi;
+    fi
+  od;
+  printf(`Done with n=%-2d  Time %8.3f  Space %8d\n`,
+    n,time()-st0,`SF/bytes`());
+  interface(quiet=false); op(K)
+end;
+
+# Remember the table of S-expansions of e-functions
+
+`qt_kostka/e2S`:=proc(mu) local nu,f; option remember;
+  nu:=SF['conjugate'](mu);
+  f:=op(2,`SF/added/etable`(mu)[1]);
+  toS(SF['hooks'](nu,1,t)*f,'e')/SF['hooks'](nu,1,t)
+end:
+
