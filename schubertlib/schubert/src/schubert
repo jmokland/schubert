@@ -31,16 +31,21 @@
 #  additions that are suitable for inclusion in later versions of schubert.
 #  
 #  The current version of schubert will usually be available for
-#  download at the schubert homepage (http://www.math.uib.no/schubert/).
+#  download at (https://github.com/jmokland/schubert).
 #
 #  If you want to be notified of upgrades, send email or ordinary mail
 #  to one of us.
 #  
-#  Addresses:  Department of Mathematics, University of Illinois at Urbana-Champaign,
-#              Urbana, IL 61801, USA            katz@math.uiuc.edu
-#  
-#              Mathematical Institute, University of Bergen, Johs. Brunsgt. 12,
-#              N-5008 BERGEN, Norway            stromme@math.uib.no
+#  Addresses:  Department of Mathematics, MC-382, University of Illinois at Urbana-Champaign,
+#              Urbana, IL 61801, USA                    katz@math.uiuc.edu
+#
+#  Stein Arild Strømme died 2014-01-31.
+#  See https://mat-web.upc.edu/people/sebastia.xambo/Bios/SAS/p-SAS-2014-09-03.pdf 
+#
+#              Jan-Magnus Økland
+#              Department of Global Public Health and Primary Care, University of Bergen,
+#              Postboks 7804, 5020 Bergen, Norway       jmokland@math.uib.no 
+#
 #  
 version_:=`0.999`:
 
@@ -58,7 +63,7 @@ version_:=`0.999`:
 
 # Changes from version 0.995:
 
-# For maintainability, loose the tabs: M-x untabify (emacs)
+# For maintainability, no more tabs: M-x untabify (emacs)
 # installation and help inspired by SF2
 # updates
 # -- contact information
