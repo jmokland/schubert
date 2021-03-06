@@ -87,6 +87,6 @@ so that SF is in the schubertlib directory. Ignore the COMPILE.SF file and build
 
  for file in files do parse(cat(`read `, cat("`C:\\\\Users\\\\Chasles\\\\schubertlib\\\\SF\\\\src\\\\", file, "`;")), statement) end do;
 
-At this point schubert and SF will respond to 'with()', but the newly created helpfiles are unavailable. Restarting maple and pointing it to schubertlib again will make them available.
+At this point schubert and SF will respond to 'with()', but the newly created helpfiles are unavailable. Restarting maple after putting schubert.help in the main lib/ directory will make them available on maple18 and later.
 
 Enjoy!
