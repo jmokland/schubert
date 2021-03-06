@@ -80,7 +80,7 @@ then enter
 
 which recreates the schubert package. 
 
-Extract John Stembridge's SF2 from http://www.math.lsa.umich.edu/~jrs/software/SF2.4.tar.gz 
+Extract John Stembridge's SF2 from https://web.archive.org/web/20140923081806/http://www.math.lsa.umich.edu/~jrs/software/SF2.4.tar.gz
 so that SF is in the schubertlib directory. Ignore the COMPILE.SF file and build from inside maple by issuing the commands:
 
  files := [Par, add_basis, char2sf, conjugate, dominate, dual_basis, evalsf, hooks, itensor, jt_matrix, nextPar, omega, plethysm, scalar, sf2char, skew, stdeg, subPar, theta, toe, toh, top, tos, varset, zee, SF, added, dualize, homog_cmps, jt_det, to_ehp, tools, verify];
