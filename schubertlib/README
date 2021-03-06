@@ -31,7 +31,8 @@ in schubert/src/
  schubertmanual	The schubert manual
  schubert.m		
  schubert/*.m	
- maple.hdb		The help files for schubert and SF
+ maple.hdb		The help files for schubert and SF for maple17 and earlier
+ schubert.help The help files for schubert and SF for maple18 and later
  SF.m			
  SF/*.m		
 
