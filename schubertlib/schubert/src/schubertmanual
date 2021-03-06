@@ -108,39 +108,30 @@ The global constant `version_` contains the schubert version number.
 
 The package will be formed by creating the schubert.m file.
 
-To do this under Unix:
+Tell maple about the 
+schubertlib directory
 
-Decide which directory you want the schubert package to be located in.  Modify
-your .mapleinit file to include this directory in your libname variable.  Be
-sure to include the full path name.  For example, if you need no other maple
-libraries besides schubert and the built-in ones, and you want schubert in your
-directory /u/chasles/schubert/schubertlib, your .mapleinit file might read:
+ HomeLib := `C:\\Users\\Chasles\\schubertlib`:
+ libname := libname, HomeLib:
 
-HomeLib:=`/u/chasles/schubert/schubertlib`:
-libname:=libname,HomeLib:
+then enter 
 
-Extract schubert.tar in the directory /u/chasles/, change directory to
-/u/chasles/schubert and type at the system prompt
+ read "C:\\Users\\Chasles\\schubertlib\\schubert\\src\\schubert";
 
-unix: make
+which recreates the schubert package. 
 
-This creates the schubert package.  You should see the files
-schubert.m and maple.hdb in the schubertlib directory.
+Extract John Stembridge's SF2 from https://web.archive.org/web/20140923081806/http://www.math.lsa.umich.edu/~jrs/software/SF2.4.tar.gz
+so that SF is in the schubertlib directory. Ignore the COMPILE.SF file and build from inside maple by issuing the commands:
 
-To use schubert, you need to get into maple, then load the schubert
-package via the maple command "with(schubert);".  Currently, the file
-SF.m needs to be loaded as well.  For instance, you can put SF.m in
-the same directory as schubert.m, and proceed as below.
+ files := [Par, add_basis, char2sf, conjugate, dominate, dual_basis, evalsf, hooks, itensor, jt_matrix, nextPar, omega, plethysm, scalar, sf2char, skew, stdeg, subPar, theta, toe, toh, top, tos, varset, zee, SF, added, dualize, homog_cmps, jt_det, to_ehp, tools, verify];
 
-Warning: SF2.4v.txt renders linalg[diag] unusable; use SF2.4.tar.gz
-from <http://www.math.lsa.umich.edu/~jrs/maple.html>. If you unpack it
-in /u/chasles/schubert/schubertlib, SF.m lands in the same direcrtory
-as schubert.m. If you do this, make sure to rerun make, as an SF
-install deletes the schubert help, but not the other way around.
+ for file in files do parse(cat(`read `, cat("`C:\\\\Users\\\\Chasles\\\\schubertlib\\\\SF\\\\src\\\\", file, "`;")), statement) end do;
 
-unix: maple
-    |\^/|     Maple 11 (X86 64 LINUX)
-._|\|   |/|_. Copyright (c) Maplesoft, a division of Waterloo Maple Inc. 2007
+If you are using maple18 or later use the schubert.help file; putting it in maple's lib/ directory should work.
+
+ chasles@hermann:~$ /usr/local/maple13/bin/maple
+    |\^/|     Maple 13 (X86 64 LINUX)
+._|\|   |/|_. Copyright (c) Maplesoft, a division of Waterloo Maple Inc. 2009
  \  MAPLE  /  All rights reserved. Maple is a trademark of
  <____ ____>  Waterloo Maple Inc.
       |       Type ? for help.
