@@ -39,10 +39,10 @@
 #  Addresses:  Department of Mathematics, MC-382, University of Illinois at Urbana-Champaign,
 #              Urbana, IL 61801, USA                    katz@math.uiuc.edu
 #
-#  Stein Arild Strømme died 2014-01-31.
+#  Stein Arild StrÃ¸mme died 2014-01-31.
 #  See https://mat-web.upc.edu/people/sebastia.xambo/Bios/SAS/p-SAS-2014-09-03.pdf 
 #
-#              Jan-Magnus Økland
+#              Jan-Magnus Ã˜kland
 #              Department of Global Public Health and Primary Care, University of Bergen,
 #              Postboks 7804, 5020 Bergen, Norway       jmokland@math.uib.no 
 #
@@ -351,9 +351,9 @@ end:
     if p<0 or p>r then 0
       elif p=0 then 1
       elif p=1 then A
-      elif 2*p>r then determinant(A)&@dual(wedge(r-p,A))
+      elif 2*p>r then tensor(determinant(A),dual(wedge(r-p,A)))
     else
-          `schubert/strip`(add( wedge(m,A)*(-1)^(p-m+1)&@subs(t=t*(p-m),A) ,m=0..(p-1))/p);
+          `schubert/strip`(add( (-1)^(p-m+1)*tensor(wedge(m,A),subs(t=t*(p-m),A)) ,m=0..(p-1))/p);
     fi;
 end:
 
